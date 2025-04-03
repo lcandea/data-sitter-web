@@ -1,0 +1,19 @@
+networks:
+  data_sitter_network:
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: devc-ds
+    volumes:
+      - ..:/workspace:cached
+      - ds_node:/workspace/node_modules
+    command: sleep infinity
+    networks:
+      - data_sitter_network
+
+volumes:
+  ds_node:
+    driver: local

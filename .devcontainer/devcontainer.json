@@ -1,0 +1,30 @@
+{
+    "name": "data-sitter-web",
+    "dockerComposeFile": ["./docker-compose.yml"],
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "containerEnv": {},
+    "mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+            },
+            "extensions": [
+                "pkief.material-icon-theme",
+                "ms-vsliveshare.vsliveshare",
+                "mechatroner.rainbow-csv",
+                "oderwat.indent-rainbow",
+                "ms-azuretools.vscode-docker",
+                "ms-toolsai.jupyter",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode"
+            ]
+        }
+    },
+    "forwardPorts": [8080],
+    "postCreateCommand": "./.devcontainer/postCreate.sh",
+    "remoteUser": "vscode"
+}
