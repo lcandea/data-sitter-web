@@ -4,6 +4,7 @@ import { Landing } from "@/pages/Landing";
 import { ContractPage } from "@/pages/contract";
 import { ValidatePage } from "@/pages/validate";
 import { Footer } from "@/components/Footer";
+import { PrivateRoute } from "./components/PrivateRoute";
 
 function App() {
   return (
@@ -16,6 +17,12 @@ function App() {
             <Route path="/contract" element={<ContractPage />} />
             <Route path="/contract/:id" element={<ContractPage />} />
             <Route path="/contract/:id/validate" element={<ValidatePage />} />
+            <Route element={<PrivateRoute />}>
+              <Route
+                path="/contracts"
+                element={<p>I show you your dashboards</p>}
+              />
+            </Route>
           </Routes>
         </div>
       </main>
