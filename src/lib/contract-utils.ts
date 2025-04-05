@@ -1,25 +1,6 @@
 import { parseRuleTemplate } from "./rule-parser";
 import { Contract, ContractField, ContractValue, Rule } from "./types";
-
-// TODO: Add to data-sitter-js
-export interface FieldRule {
-  rule: string;
-  parsed_rule: string;
-  rule_params: Record<string, string>;
-  parsed_values: Record<string, any>;
-}
-
-export interface Field {
-  field_name: string;
-  field_type: string;
-  field_rules: FieldRule[];
-}
-
-export interface ImportData {
-  name: string;
-  fields: Field[];
-  values: Record<string, any>;
-}
+import { FieldRule, Field, ImportData } from "data-sitter";
 
 export function formatContractForExport(contract: Contract) {
   const formattedContract = {

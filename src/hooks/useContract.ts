@@ -2,13 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { isEqual } from "lodash";
 import { Contract, ContractField, ContractValue, DataInput } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "./useStore";
-import { useDataSitter } from "./useDataSitter";
+
 import * as csActions from "../store/slices/contract";
 import * as vsActions from "../store/slices/values";
+import { DataSitterValidator } from "data-sitter";
+import {
+  contractFromImportData,
+  formatContractForExport,
+} from "@/lib/contract-utils";
 
 export const useContract = () => {
   const dispatch = useAppDispatch();
-  const ds = useDataSitter();
 
   const [name, setName] = useState("");
   const [fields, setFields] = useState<ContractField[]>([]);
@@ -62,10 +66,18 @@ export const useContract = () => {
   };
 
   const importContract = async (content: string, fileType: "YAML" | "JSON") => {
-    const importedContract = await ds.getRepresentation(content, fileType);
-    setName(importedContract.name);
-    setFields(importedContract.fields);
-    dispatch(vsActions.setValues(importedContract.values));
+    let validator;
+    if (fileType === "JSON") {
+      validator = await DataSitterValidator.fromJson(content);
+    } else {
+      validator = await DataSitterValidator.fromYaml(content);
+    }
+    const importedContract = await validator.getRepresentation();
+    const contract = contractFromImportData(importedContract);
+
+    setName(contract.name);
+    setFields(contract.fields);
+    dispatch(vsActions.setValues(contract.values));
   };
 
   const persistContract = async () => {
@@ -87,17 +99,18 @@ export const useContract = () => {
 
   const validateData = async (data: DataInput) => {
     if (!contract) throw new Error("Contract not loaded.");
-
-    let dataToValidate = data;
-    if (!Array.isArray(data) && typeof data !== "string") {
-      dataToValidate = [data];
-    }
-    return await ds.validateData(contract, dataToValidate);
+    const validator = new DataSitterValidator(
+      formatContractForExport(contract)
+    );
+    return await validator.validateData(data);
   };
 
   const validateCsv = async (csvContent: string) => {
     if (!contract) throw new Error("Contract not loaded.");
-    return await ds.validateCsv(contract, csvContent);
+    const validator = new DataSitterValidator(
+      formatContractForExport(contract)
+    );
+    return await validator.validateCsv(csvContent);
   };
 
   return {

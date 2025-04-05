@@ -1,7 +1,4 @@
-import {
-  getFieldDefinitions as getDataSitterFieldDefinitions,
-  FieldDefinition,
-} from "data-sitter";
+import { DataSitterValidator, FieldDefinition } from "data-sitter";
 
 let cachedDefinitions: FieldDefinition[] | null = null;
 
@@ -9,7 +6,7 @@ export async function getAllRulesForField(
   fieldType: string
 ): Promise<string[]> {
   if (!cachedDefinitions) {
-    cachedDefinitions = await getDataSitterFieldDefinitions();
+    cachedDefinitions = await DataSitterValidator.getFieldDefinitions();
   }
 
   const field = cachedDefinitions.find((f) => f.field === fieldType);
@@ -28,7 +25,7 @@ export async function getAllRulesForField(
 
 export async function getFieldDefinitions(): Promise<FieldDefinition[]> {
   if (!cachedDefinitions) {
-    cachedDefinitions = await getDataSitterFieldDefinitions();
+    cachedDefinitions = await DataSitterValidator.getFieldDefinitions();
   }
   return cachedDefinitions;
 }
