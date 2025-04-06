@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { isEqual } from "lodash";
 import { Contract, ContractField, ContractValue, DataInput } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "./useStore";
 
 import * as csActions from "../store/slices/contract";
-import * as vsActions from "../store/slices/values";
 import { DataSitterValidator } from "data-sitter";
-import {
-  contractFromImportData,
-  formatContractForExport,
-} from "@/lib/contract-utils";
+import { formatContractForExport } from "@/lib/contract-utils";
 
 export const useContract = () => {
   const dispatch = useAppDispatch();
@@ -21,6 +17,8 @@ export const useContract = () => {
   const { values: storedValues } = useAppSelector((state) => state.values);
   const {
     id,
+    error,
+    loading,
     name: storedName,
     fields: storedFields,
   } = useAppSelector((state) => state.contract);
@@ -65,19 +63,17 @@ export const useContract = () => {
     setFields(newContract.fields);
   };
 
-  const importContract = async (content: string, fileType: "YAML" | "JSON") => {
-    let validator;
-    if (fileType === "JSON") {
-      validator = await DataSitterValidator.fromJson(content);
-    } else {
-      validator = await DataSitterValidator.fromYaml(content);
-    }
-    const importedContract = await validator.getRepresentation();
-    const contract = contractFromImportData(importedContract);
+  const fetchContract = useCallback(
+    (id: string) => {
+      if (id) {
+        dispatch(csActions.fetchContract(id));
+      }
+    },
+    [dispatch]
+  );
 
-    setName(contract.name);
-    setFields(contract.fields);
-    dispatch(vsActions.setValues(contract.values));
+  const importContract = async (content: string, fileType: "YAML" | "JSON") => {
+    dispatch(csActions.importContract({ content, fileType }));
   };
 
   const persistContract = async () => {
@@ -89,7 +85,6 @@ export const useContract = () => {
       await dispatch(csActions.updateConctract(id));
       return id;
     } else {
-      await dispatch(csActions.createConctract());
       const resultAction = await dispatch(csActions.createConctract());
       if (csActions.createConctract.fulfilled.match(resultAction)) {
         return resultAction.payload;
@@ -117,7 +112,10 @@ export const useContract = () => {
     contract,
     storedContract,
     hasChanged,
+    error,
+    loading,
     setContract,
+    fetchContract,
     importContract,
     persistContract,
     validateData,

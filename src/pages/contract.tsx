@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileJson, CheckCircle, Save } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,36 @@ export function ContractPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [exportOpen, setExportOpen] = useState(false);
-  const { contract, setContract, hasChanged, importContract, persistContract } =
-    useContract();
+  const {
+    error,
+    loading,
+    contract,
+    hasChanged,
+    setContract,
+    fetchContract,
+    importContract,
+    persistContract,
+  } = useContract();
+
+  useEffect(() => {
+    if (id) {
+      console.log("ContractPage/useEffect");
+      fetchContract(id);
+    }
+  }, [fetchContract, id]);
+
+  if (error) {
+    return (
+      <>
+        <h1>ERROR: {error}</h1>;
+        <Button onClick={() => navigate("/")}>Close</Button>
+      </>
+    );
+  }
+
+  if (loading) {
+    return <h1>Loading...</h1>;
+  }
 
   const handleSave = async () => {
     if (!contract.name) {

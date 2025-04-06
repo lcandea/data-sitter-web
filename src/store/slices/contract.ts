@@ -7,6 +7,13 @@ import {
 } from "@reduxjs/toolkit";
 import { Contract, ContractField } from "@/lib/types";
 import { createAppAsyncThunk } from "..";
+import {
+  contractFromImportData,
+  formatContractForExport,
+} from "@/lib/contract-utils";
+import * as db from "@/services/database";
+import { DataSitterValidator } from "data-sitter";
+import { setValues } from "./values";
 
 interface ContractState {
   id: string | null;
@@ -24,17 +31,39 @@ const initialState: ContractState = {
   error: null,
 };
 
-const generateId = () => {
-  return Math.random().toString(36).substring(2, 10);
-};
-
-export const fetchConctract = createAppAsyncThunk(
-  "contract/fetchConctract",
-  async (id: string) => {
-    console.log("contract/fetchConctract id:", id);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-
+export const fetchContract = createAppAsyncThunk(
+  "contract/fetchContract",
+  async (id: string, { dispatch }) => {
+    console.log("contract/fetchContract id:", id);
+    const contract = await db.fetchContract(id);
+    if (contract) {
+      const validator = new DataSitterValidator(contract);
+      const { name, fields, values } = contractFromImportData(
+        await validator.getRepresentation()
+      );
+      dispatch(setValues(values));
+      return { id, name, fields };
+    }
     return null;
+  }
+);
+
+export const importContract = createAppAsyncThunk(
+  "contract/importContract",
+  async (
+    { content, fileType }: { content: string; fileType: "YAML" | "JSON" },
+    { dispatch }
+  ) => {
+    let validator;
+    if (fileType === "JSON") {
+      validator = await DataSitterValidator.fromJson(content);
+    } else {
+      validator = await DataSitterValidator.fromYaml(content);
+    }
+    const importedContract = await validator.getRepresentation();
+    const contract = contractFromImportData(importedContract);
+    dispatch(setValues(contract.values));
+    return contract;
   }
 );
 
@@ -44,10 +73,14 @@ export const createConctract = createAppAsyncThunk(
     const { name, fields } = getState().contract;
     if (!name) throw Error("Contract name cannot be empty or null.");
     const { values } = getState().values;
-    const updatedContract: Contract = { id: null, name, fields, values };
-    console.log("contract/createConctract id:", updatedContract);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return generateId();
+    const newContract = formatContractForExport({
+      id: null,
+      name,
+      fields,
+      values,
+    });
+    const id = db.createConctract(newContract);
+    return id;
   }
 );
 
@@ -58,10 +91,13 @@ export const updateConctract = createAppAsyncThunk(
     if (id != storedId) throw Error("IDs does not match when trying to update");
     if (!name) throw Error("Contract name cannot be empty or null.");
     const { values } = getState().values;
-    const updatedContract: Contract = { id, name, fields, values };
-    console.log("contract/updateConctract id:", id, updatedContract);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return 204;
+    const updatedContract = formatContractForExport({
+      id: null,
+      name,
+      fields,
+      values,
+    });
+    await db.updateConctract(id, updatedContract);
   }
 );
 
@@ -81,10 +117,13 @@ const contractSlice = createSlice({
       state.name = name || null;
       state.fields = fields;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchConctract.fulfilled, (state, action) => {
+      .addCase(fetchContract.fulfilled, (state, action) => {
         if (action.payload) {
           const { id, name, fields } = action.payload;
           state.id = id || null;
@@ -96,11 +135,10 @@ const contractSlice = createSlice({
         const id = action.payload;
         state.id = id;
       })
-      .addCase(updateConctract.fulfilled, (state, action) => {
-        const status = action.payload;
-        if (status != 204) {
-          state.error = "Update Contract did not return 204";
-        }
+      .addCase(importContract.fulfilled, (state, action) => {
+        const { name, fields } = action.payload;
+        state.name = name;
+        state.fields = fields;
       })
       .addMatcher(
         (action): action is PayloadAction =>
@@ -133,6 +171,7 @@ const contractSlice = createSlice({
       );
   },
 });
-export const { setName, setFields, setContract } = contractSlice.actions;
+export const { setName, setFields, setContract, clearError } =
+  contractSlice.actions;
 
 export default contractSlice.reducer;
