@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExportDialog } from "@/components/contract/ExportDialog";
 import { ImportDialog } from "@/components/contract/ImportDialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { ContractEditor } from "@/components/contract/ContractEditor";
 import { useContract } from "@/hooks/useContract";
+import { useAppDispatch } from "@/hooks/useStore";
+import { hideLoading, showLoading } from "@/store/slices/loading";
 
 export function ContractPage() {
   const { id } = useParams();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [exportOpen, setExportOpen] = useState(false);
@@ -32,6 +35,14 @@ export function ContractPage() {
     }
   }, [fetchContract, id]);
 
+  useEffect(() => {
+    if (loading) {
+      dispatch(showLoading());
+    } else {
+      dispatch(hideLoading());
+    }
+  }, [dispatch, loading]);
+
   if (error) {
     return (
       <>
@@ -39,10 +50,6 @@ export function ContractPage() {
         <Button onClick={() => navigate("/")}>Close</Button>
       </>
     );
-  }
-
-  if (loading) {
-    return <h1>Loading...</h1>;
   }
 
   const handleSave = async () => {

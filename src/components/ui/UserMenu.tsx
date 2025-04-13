@@ -3,6 +3,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Sheet,
@@ -11,7 +12,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { LogIn, Menu } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -38,33 +39,48 @@ export const UserMenu = () => {
       <div className="hidden md:inline-flex">
         {user ? (
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <div className="flex items-center space-x-2 cursor-pointer">
-                <Avatar>
-                  <AvatarImage src={undefined} alt={user?.email} />
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={user.user_metadata.avatar_url}
+                    alt={(user.user_metadata.full_name ?? "?")[0]}
+                  />
                   <AvatarFallback>
-                    {user?.email?.[0].toUpperCase()}
+                    {(user.user_metadata.full_name ?? "?")[0]}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-semibold text-sm">
-                    {user?.email?.split("@")[0]}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <div className="flex items-center justify-start gap-2 p-2">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {user.user_metadata.full_name || "No Name"}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email || "No email"}
                   </p>
                 </div>
               </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48">
-              <DropdownMenuItem onClick={handleViewContracts}>
-                View Contracts
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate("/contracts")}>
+                My Contracts
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                <LogOut className="mr-2" />
+                <LogOut className="h-4 w-4 mr-2" />
                 Log Out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Button variant="outline" onClick={() => setOpenLogin(true)}>
+          <Button
+            variant="outline"
+            onClick={() => setOpenLogin(true)}
+            className="hidden md:inline-flex"
+          >
+            <LogIn className="h-4 w-4 mr-2" />
             Log In
           </Button>
         )}
@@ -82,15 +98,23 @@ export const UserMenu = () => {
             {user ? (
               <div className="flex items-center space-x-2 cursor-pointer">
                 <Avatar>
-                  <AvatarImage src={undefined} alt={user?.email} />
+                  <AvatarImage
+                    src={user.user_metadata.avatar_url}
+                    alt={(user.user_metadata.full_name ?? "?")[0]}
+                  />
                   <AvatarFallback>
-                    {user?.email?.[0].toUpperCase()}
+                    {(user.user_metadata.full_name ?? "?")[0]}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-semibold text-sm">
-                    {user?.email?.split("@")[0]}
-                  </p>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user.user_metadata.full_name || "No Name"}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email || "No email"}
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
@@ -122,6 +146,7 @@ export const UserMenu = () => {
                 className="w-full"
                 onClick={() => setOpenLogin(true)}
               >
+                <LogIn className="mr-2" />
                 Log In
               </Button>
             )}

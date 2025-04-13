@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { ContractValue, ParameterType } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { addValue, updateValue, removeValue } from "@/store/slices/values";

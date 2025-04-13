@@ -20,8 +20,8 @@ export function MainNav() {
         </div>
 
         <div className="flex items-center gap-4 flex-1 justify-end">
-          <ThemeToggle />
           <UserMenu />
+          <ThemeToggle />
         </div>
       </div>
     </div>

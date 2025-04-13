@@ -1,4 +1,12 @@
 import { supabase } from "./supabase";
+import {
+  ContractLink,
+  mapToContractLink,
+  mapToContractLinkDTO,
+  ContractPermission,
+  mapToContractPermission,
+  mapToContractPermissionDTO,
+} from "@/lib/database-types";
 
 interface Contract {
   name: string;
@@ -9,6 +17,12 @@ interface Field {
   field_name: string;
   field_type: string;
   field_rules: string[];
+}
+
+export interface ContractPreview {
+  id: number;
+  name: string;
+  fields_count: number;
 }
 
 const CONTRACTS_TABLE = "contracts";
@@ -22,9 +36,21 @@ export const fetchContract = async (id: string): Promise<Contract | null> => {
     .from(CONTRACTS_TABLE)
     .select("contract")
     .eq("id", id);
-  if (contracts.data && contracts.data.length)
+  if (contracts.data && contracts.data.length === 1)
     return contracts.data[0].contract as Contract;
   return null;
+};
+
+export const fetchUserContracts = async (): Promise<ContractPreview[]> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not logged in.");
+  const { data, error } = await supabase.rpc("get_contracts", {
+    uid: user.id,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 };
 
 export const createConctract = async (contract: Contract): Promise<string> => {

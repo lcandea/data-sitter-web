@@ -11,7 +11,7 @@ import {
   contractFromImportData,
   formatContractForExport,
 } from "@/lib/contract-utils";
-import * as db from "@/services/database";
+import * as db from "@/services/supabase/contracts";
 import { DataSitterValidator } from "data-sitter";
 import { setValues } from "./values";
 
@@ -19,6 +19,7 @@ interface ContractState {
   id: string | null;
   name: string | null;
   fields: ContractField[];
+  user_contracts: db.ContractPreview[];
   loading: boolean;
   error: string | null;
 }
@@ -27,9 +28,18 @@ const initialState: ContractState = {
   id: null,
   name: null,
   fields: [],
+  user_contracts: [],
   loading: false,
   error: null,
 };
+
+export const fetchUserContracts = createAppAsyncThunk(
+  "contract/fetchUserContracts",
+  async () => {
+    const contracts = await db.fetchUserContracts();
+    return contracts;
+  }
+);
 
 export const fetchContract = createAppAsyncThunk(
   "contract/fetchContract",
@@ -123,6 +133,9 @@ const contractSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchUserContracts.fulfilled, (state, action) => {
+        state.user_contracts = action.payload;
+      })
       .addCase(fetchContract.fulfilled, (state, action) => {
         if (action.payload) {
           const { id, name, fields } = action.payload;
