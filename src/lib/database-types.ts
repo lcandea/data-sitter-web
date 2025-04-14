@@ -27,8 +27,8 @@ export interface ContractLink {
   id?: string;
   contractId: string;
   token: string;
-  createdAt?: Date;
-  expiresAt?: Date | null;
+  createdAt?: string;
+  expiresAt?: string | null;
   isActive: boolean;
 }
 
@@ -37,8 +37,8 @@ export const mapToContractLink = (dto: ContractLinkDTO): ContractLink => ({
   id: dto.id,
   contractId: dto.contract_id,
   token: dto.token,
-  createdAt: dto.created_at ? new Date(dto.created_at) : undefined,
-  expiresAt: dto.expires_at ? new Date(dto.expires_at) : null,
+  createdAt: dto.created_at,
+  expiresAt: dto.expires_at,
   isActive: dto.is_active,
 });
 
@@ -46,8 +46,8 @@ export const mapToContractLinkDTO = (app: ContractLink): ContractLinkDTO => ({
   id: app.id,
   contract_id: app.contractId,
   token: app.token,
-  created_at: app.createdAt ? app.createdAt.toISOString() : undefined,
-  expires_at: app.expiresAt ? app.expiresAt.toISOString() : null,
+  created_at: app.createdAt,
+  expires_at: app.expiresAt,
   is_active: app.isActive,
 });
 

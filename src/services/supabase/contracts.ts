@@ -4,7 +4,7 @@ import { supabase } from "./supabase";
 interface Contract {
   name: string;
   fields: Field[];
-  values: Record<string, any>;
+  values: Record<string, unknown>;
 }
 interface Field {
   field_name: string;

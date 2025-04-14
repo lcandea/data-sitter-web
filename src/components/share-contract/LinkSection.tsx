@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/useToast";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import {
   createContractLink,
+  deleteContractLink,
   fetchContractLink,
   refreshLink,
   updateLinkIsActive,
@@ -29,39 +30,46 @@ export function LinkSection({ contractId }: LinkSectionProps) {
   }, [dispatch, contractId]);
 
   const onGenerateLink = async () => {
-    await dispatch(createContractLink(contractId));
-    toast({
-      title: "Link Generated",
-      description: "A new shareable link has been created.",
-    });
+    const request = await dispatch(createContractLink(contractId));
+    if (request.meta.requestStatus === "fulfilled") {
+      toast({
+        title: "Link Generated",
+        description: "A new shareable link has been created.",
+      });
+    }
   };
 
   const onRefreshLink = async () => {
-    await dispatch(refreshLink());
-
-    toast({
-      title: "Link Refreshed",
-      description: "The shareable link has been refreshed.",
-    });
+    const request = await dispatch(refreshLink());
+    if (request.meta.requestStatus === "fulfilled") {
+      toast({
+        title: "Link Refreshed",
+        description: "The shareable link has been refreshed.",
+      });
+    }
   };
 
-  const onRevokeLink = () => {
-    // setContractLink(null);
-    toast({
-      title: "Link Revoked",
-      description: "The shareable link has been revoked.",
-    });
+  const onRevokeLink = async () => {
+    const request = await dispatch(deleteContractLink());
+    if (request.meta.requestStatus === "fulfilled") {
+      toast({
+        title: "Link Revoked",
+        description: "The shareable link has been revoked.",
+      });
+    }
   };
 
   const toggleActive = async (isActive: boolean) => {
     if (contractLink) {
-      await dispatch(updateLinkIsActive(isActive));
-      toast({
-        title: isActive ? "Link Activated" : "Link Deactivated",
-        description: isActive
-          ? "The shareable link is now active."
-          : "The shareable link has been deactivated.",
-      });
+      const request = await dispatch(updateLinkIsActive(isActive));
+      if (request.meta.requestStatus === "fulfilled") {
+        toast({
+          title: isActive ? "Link Activated" : "Link Deactivated",
+          description: isActive
+            ? "The shareable link is now active."
+            : "The shareable link has been deactivated.",
+        });
+      }
     }
   };
 

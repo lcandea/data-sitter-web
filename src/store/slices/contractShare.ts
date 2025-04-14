@@ -59,6 +59,16 @@ export const updateLinkIsActive = createAppAsyncThunk(
   }
 );
 
+export const deleteContractLink = createAppAsyncThunk(
+  "contractShare/deleteContractLink",
+  async (_, { getState }) => {
+    const { link } = getState().contractShare;
+    if (!link || !link.id)
+      throw new Error("You cannot delete a link when there is no link");
+    return await linkDb.deleteContractLink(link.id);
+  }
+);
+
 // export const fetchContractPermissions = createAsyncThunk(
 //   "contractShare/fetchContractPermissions",
 //   async (contractId: string) => {
@@ -85,6 +95,12 @@ const contractShareSlice = createSlice({
       .addCase(updateLinkIsActive.fulfilled, (state, action) => {
         const isActive = action.payload;
         state.link = { ...state.link!, isActive };
+      })
+      .addCase(deleteContractLink.fulfilled, (state, action) => {
+        const deleted = action.payload;
+        if (deleted) {
+          state.link = null;
+        }
       })
       // .addCase(
       //   fetchContractPermissions.fulfilled,
