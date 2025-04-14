@@ -2,12 +2,16 @@ import { configureStore, createAsyncThunk } from "@reduxjs/toolkit";
 import valuesReducer from "./slices/values";
 import contractReducer from "./slices/contract";
 import validationReducer from "./slices/validation";
+import loadingReducer from "./slices/loading";
+import contractShareReducer from "./slices/contractShare";
 
 export const store = configureStore({
   reducer: {
     values: valuesReducer,
     contract: contractReducer,
+    contractShare: contractShareReducer,
     validation: validationReducer,
+    loading: loadingReducer,
   },
 });
 

@@ -48,10 +48,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(session?.user || null);
         setLoading(false);
 
-        if (event === "SIGNED_IN") {
-          console.log("user signed in", session?.user || null);
-        } else if (event === "SIGNED_OUT") {
-          console.log("user signed out");
+        switch (event) {
+          case "SIGNED_IN":
+            console.log("user signed in", session?.user || null);
+            break;
+          case "SIGNED_OUT":
+            console.log("user signed out");
+            break;
+          default:
+            console.log("auth event:", event);
+            break;
         }
       }
     );

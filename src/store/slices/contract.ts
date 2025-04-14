@@ -14,12 +14,13 @@ import {
 import * as db from "@/services/supabase/contracts";
 import { DataSitterValidator } from "data-sitter";
 import { setValues } from "./values";
+import { ContractPreview } from "@/lib/database-types";
 
 interface ContractState {
   id: string | null;
   name: string | null;
   fields: ContractField[];
-  user_contracts: db.ContractPreview[];
+  user_contracts: ContractPreview[];
   loading: boolean;
   error: string | null;
 }
