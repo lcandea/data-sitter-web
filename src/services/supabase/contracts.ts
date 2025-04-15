@@ -28,6 +28,17 @@ export const fetchContract = async (id: string): Promise<Contract | null> => {
   return null;
 };
 
+export const fetchPublicContract = async (
+  publicToken: string
+): Promise<Contract | null> => {
+  const { data, error } = await supabase.rpc("get_contract_by_token", {
+    public_token: publicToken,
+  });
+
+  if (error) throw new Error(error.message);
+  return data as Contract;
+};
+
 export const fetchUserContracts = async (): Promise<ContractPreview[]> => {
   const {
     data: { user },

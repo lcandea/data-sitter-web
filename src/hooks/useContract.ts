@@ -72,8 +72,24 @@ export const useContract = () => {
     [dispatch]
   );
 
+  const fetchPublicContract = useCallback(
+    (token: string) => {
+      if (token) {
+        dispatch(csActions.fetchPublicContract(token));
+      }
+    },
+    [dispatch]
+  );
+
   const importContract = async (content: string, fileType: "YAML" | "JSON") => {
     dispatch(csActions.importContract({ content, fileType }));
+  };
+
+  const saveLocalChanges = async () => {
+    if (!hasChanged) return;
+    if (!name || name === "") throw new Error("Name cannot be empty.");
+    if (name != storedName) dispatch(csActions.setName(name));
+    if (!isEqual(fields, storedFields)) dispatch(csActions.setFields(fields));
   };
 
   const persistContract = async () => {
@@ -116,7 +132,9 @@ export const useContract = () => {
     loading,
     setContract,
     fetchContract,
+    fetchPublicContract,
     importContract,
+    saveLocalChanges,
     persistContract,
     validateData,
     validateCsv,

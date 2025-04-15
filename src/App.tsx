@@ -8,25 +8,37 @@ import { PrivateRoute } from "./components/PrivateRoute";
 import { ContractsPage } from "./pages/contracts";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { Toaster } from "./components/ui/toaster";
+import { PublicContractPage } from "./pages/PublicContract";
 
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <LoadingOverlay />
       <MainNav />
+
       <main className="flex-1 flex flex-col bg-background">
         <div className="flex-1">
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/contract" element={<ContractPage />} />
-            <Route path="/contract/:id" element={<ContractPage />} />
-            <Route path="/contract/:id/validate" element={<ValidatePage />} />
+
+            <Route path="/contract">
+              <Route index element={<ContractPage />} />
+              <Route path=":id" element={<ContractPage />} />
+              <Route path=":id/validate" element={<ValidatePage />} />
+            </Route>
+
+            <Route path="/shared">
+              <Route path=":publicToken" element={<PublicContractPage />} />
+              <Route path=":publicToken/validate" element={<ValidatePage />} />
+            </Route>
+
             <Route element={<PrivateRoute />}>
               <Route path="/contracts" element={<ContractsPage />} />
             </Route>
           </Routes>
         </div>
       </main>
+
       <Footer />
       <Toaster />
     </div>

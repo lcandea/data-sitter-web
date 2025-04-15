@@ -11,8 +11,8 @@ import { useContract } from "@/hooks/useContract";
 import { useAppDispatch } from "@/hooks/useStore";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 
-export function ContractPage() {
-  const { id } = useParams();
+export function PublicContractPage() {
+  const { publicToken } = useParams();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -23,16 +23,16 @@ export function ContractPage() {
     contract,
     hasChanged,
     setContract,
-    fetchContract,
+    fetchPublicContract,
     importContract,
-    persistContract,
+    saveLocalChanges,
   } = useContract();
 
   useEffect(() => {
-    if (id) {
-      fetchContract(id);
+    if (publicToken) {
+      fetchPublicContract(publicToken);
     }
-  }, [fetchContract, id]);
+  }, [fetchPublicContract, publicToken]);
 
   useEffect(() => {
     if (loading) {
@@ -60,20 +60,15 @@ export function ContractPage() {
       });
       return;
     }
-    const newId = await persistContract();
-    navigate(`/contract/${newId}`);
+    await saveLocalChanges();
+    toast({
+      title: "Local changes",
+      description: "Changes saved locally as it is from  public link",
+    });
   };
 
   const handleValidate = () => {
-    if (!id) {
-      toast({
-        title: "Error",
-        description: "Please save the contract first",
-        variant: "destructive",
-      });
-      return;
-    }
-    navigate(`/contract/${id}/validate`);
+    navigate(`/shared/${publicToken}/validate`);
   };
 
   return (

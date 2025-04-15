@@ -59,6 +59,26 @@ export const fetchContract = createAppAsyncThunk(
   }
 );
 
+export const fetchPublicContract = createAppAsyncThunk(
+  "contract/fetchPublicContract",
+  async (publicToken: string, { dispatch }) => {
+    const contract = await db.fetchPublicContract(publicToken);
+    if (contract) {
+      const validator = new DataSitterValidator(contract);
+      const { name, fields, values } = contractFromImportData(
+        await validator.getRepresentation()
+      );
+      dispatch(setValues(values));
+      return { name, fields };
+    } else {
+      throw new Error(
+        "The public token does not exists or it has been dissabled."
+      );
+    }
+    return null;
+  }
+);
+
 export const importContract = createAppAsyncThunk(
   "contract/importContract",
   async (
@@ -141,6 +161,14 @@ const contractSlice = createSlice({
         if (action.payload) {
           const { id, name, fields } = action.payload;
           state.id = id || null;
+          state.name = name || null;
+          state.fields = fields;
+        }
+      })
+      .addCase(fetchPublicContract.fulfilled, (state, action) => {
+        if (action.payload) {
+          const { name, fields } = action.payload;
+          state.id = null;
           state.name = name || null;
           state.fields = fields;
         }

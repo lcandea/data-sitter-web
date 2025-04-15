@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,8 +11,9 @@ import { useContract } from "@/hooks/useContract";
 import { TabRef } from "@/lib/types";
 
 export function ValidatePage() {
-  const { id } = useParams();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
   const { contract } = useContract();
   const { validationResult, loading } = useAppSelector(
     (state) => state.validation
@@ -35,11 +36,9 @@ export function ValidatePage() {
           <p className="text-muted-foreground mb-4">
             Please go back and create or select a contract first.
           </p>
-          <Button asChild>
-            <Link to="/contract">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Contract
-            </Link>
+          <Button onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Contract
           </Button>
         </div>
       </div>
@@ -64,11 +63,9 @@ export function ValidatePage() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="outline" asChild>
-          <Link to={`/contract/${id}`}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Link>
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
         </Button>
         <h1 className="text-3xl font-bold">Validate Data</h1>
       </div>
