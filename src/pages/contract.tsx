@@ -10,6 +10,7 @@ import { ContractEditor } from "@/components/contract/ContractEditor";
 import { useContract } from "@/hooks/useContract";
 import { useAppDispatch } from "@/hooks/useStore";
 import { hideLoading, showLoading } from "@/store/slices/loading";
+import { ErrorDialog } from "@/components/ui/ErrorDialog";
 
 export function ContractPage() {
   const { id } = useParams();
@@ -41,15 +42,6 @@ export function ContractPage() {
       dispatch(hideLoading());
     }
   }, [dispatch, loading]);
-
-  if (error) {
-    return (
-      <>
-        <h1>ERROR: {error}</h1>;
-        <Button onClick={() => navigate("/")}>Close</Button>
-      </>
-    );
-  }
 
   const handleSave = async () => {
     if (!contract.name) {
@@ -117,6 +109,14 @@ export function ContractPage() {
         open={exportOpen}
         onOpenChange={setExportOpen}
         contract={contract}
+      />
+
+      <ErrorDialog
+        open={!!error}
+        onOpenChange={() => {
+          navigate("/");
+        }}
+        message={error!}
       />
     </div>
   );
