@@ -55,7 +55,7 @@ export const mapToContractLinkDTO = (app: ContractLink): ContractLinkDTO => ({
 export interface ContractPermissionDTO {
   id: string;
   contract_id: string;
-  user_id: string;
+  user_email: string;
   role: ContractPermissionRole;
   created_at: string;
 }
@@ -64,9 +64,9 @@ export interface ContractPermissionDTO {
 export interface ContractPermission {
   id: string;
   contractId: string;
-  userId: string;
+  userEmail: string;
   role: ContractPermissionRole;
-  createdAt: Date;
+  createdAt: string;
 }
 
 // Mapper functions
@@ -75,9 +75,9 @@ export const mapToContractPermission = (
 ): ContractPermission => ({
   id: dto.id,
   contractId: dto.contract_id,
-  userId: dto.user_id,
+  userEmail: dto.user_email,
   role: dto.role,
-  createdAt: new Date(dto.created_at),
+  createdAt: dto.created_at,
 });
 
 export const mapToContractPermissionDTO = (
@@ -85,7 +85,7 @@ export const mapToContractPermissionDTO = (
 ): ContractPermissionDTO => ({
   id: app.id,
   contract_id: app.contractId,
-  user_id: app.userId,
+  user_email: app.userEmail,
   role: app.role,
-  created_at: app.createdAt.toISOString(),
+  created_at: app.createdAt,
 });

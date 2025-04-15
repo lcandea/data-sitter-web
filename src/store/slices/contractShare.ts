@@ -1,12 +1,15 @@
 import {
   createSlice,
-  PayloadAction,
   createAsyncThunk,
   isPending,
   isFulfilled,
   isRejected,
 } from "@reduxjs/toolkit";
-import { ContractLink, ContractPermission } from "@/lib/database-types";
+import {
+  ContractLink,
+  ContractPermission,
+  ContractPermissionRole,
+} from "@/lib/database-types";
 import * as linkDb from "@/services/supabase/contract-links";
 import * as permDb from "@/services/supabase/contract-permissions";
 import { createAppAsyncThunk } from "..";
@@ -69,12 +72,51 @@ export const deleteContractLink = createAppAsyncThunk(
   }
 );
 
-// export const fetchContractPermissions = createAsyncThunk(
-//   "contractShare/fetchContractPermissions",
-//   async (contractId: string) => {
-//     return await db.fetchContractPermissions(contractId);
-//   }
-// );
+export const fetchContractPermissions = createAsyncThunk(
+  "contractShare/fetchContractPermissions",
+  async (contractId: string) => {
+    return await permDb.fetchContractPermissions(contractId);
+  }
+);
+
+export const grantUserPermission = createAsyncThunk(
+  "contractShare/grantUserPermission",
+  async ({
+    contractId,
+    email,
+    role,
+  }: {
+    contractId: string;
+    email: string;
+    role: ContractPermissionRole;
+  }) => {
+    return await permDb.createUserPermission(contractId, email, role);
+  }
+);
+
+export const revokeUserPermission = createAsyncThunk(
+  "contractShare/revokeUserPermission",
+  async ({ contractId, email }: { contractId: string; email: string }) => {
+    const result = await permDb.removeUserPermission(contractId, email);
+    if (result) return email;
+    return null;
+  }
+);
+
+export const updateUserPermission = createAsyncThunk(
+  "contractShare/updateUserPermission",
+  async ({
+    contractId,
+    email,
+    role,
+  }: {
+    contractId: string;
+    email: string;
+    role: ContractPermissionRole;
+  }) => {
+    return await permDb.updateUserPermission(contractId, email, role);
+  }
+);
 
 const contractShareSlice = createSlice({
   name: "contractShare",
@@ -98,19 +140,33 @@ const contractShareSlice = createSlice({
       })
       .addCase(deleteContractLink.fulfilled, (state, action) => {
         const deleted = action.payload;
-        if (deleted) {
-          state.link = null;
+        if (deleted) state.link = null;
+      })
+      .addCase(fetchContractPermissions.fulfilled, (state, action) => {
+        state.permissions = action.payload;
+      })
+      .addCase(grantUserPermission.fulfilled, (state, action) => {
+        state.permissions.push(action.payload);
+      })
+      .addCase(revokeUserPermission.fulfilled, (state, action) => {
+        const revokedEmail = action.payload;
+        if (revokedEmail) {
+          state.permissions = state.permissions.filter(
+            (p) => p.userEmail !== revokedEmail
+          );
         }
       })
-      // .addCase(
-      //   fetchContractPermissions.fulfilled,
-      //   (state, action: PayloadAction<ContractPermission[]>) => {
-      //     state.permissions = action.payload;
-      //   }
-      // )
+      .addCase(updateUserPermission.fulfilled, (state, action) => {
+        const updatedRecord = action.payload;
+        console.log("updatedRecord", updatedRecord);
+        state.permissions = state.permissions.map((p) =>
+          p.id === updatedRecord.id ? updatedRecord : p
+        );
+        console.log("state.permissions", state.permissions);
+      })
       .addMatcher(
         (action): action is ReturnType<typeof isPending> =>
-          isPending(action) && action.type.startsWith("contractResources/"),
+          isPending(action) && action.type.startsWith("contractShare/"),
         (state) => {
           state.loading = true;
           state.error = null;
@@ -118,14 +174,14 @@ const contractShareSlice = createSlice({
       )
       .addMatcher(
         (action): action is ReturnType<typeof isFulfilled> =>
-          isFulfilled(action) && action.type.startsWith("contractResources/"),
+          isFulfilled(action) && action.type.startsWith("contractShare/"),
         (state) => {
           state.loading = false;
         }
       )
       .addMatcher(
         (action): action is ReturnType<typeof isRejected> =>
-          isRejected(action) && action.type.startsWith("contract/"),
+          isRejected(action) && action.type.startsWith("contractShare/"),
         (state, action) => {
           state.loading = false;
           if ("error" in action) {

@@ -1,49 +1,65 @@
 import { ensureUserLoggedIn, supabase } from "./supabase";
 import {
   ContractPermission,
+  ContractPermissionRole,
   mapToContractPermission,
-  mapToContractPermissionDTO,
 } from "@/lib/database-types";
-
-const CONTRACT_PERMISSIONS_TABLE = "contract_permissions";
 
 export const fetchContractPermissions = async (
   contractId: string
 ): Promise<ContractPermission[]> => {
   await ensureUserLoggedIn();
 
-  const { data, error } = await supabase
-    .from(CONTRACT_PERMISSIONS_TABLE)
-    .select("*")
-    .eq("contract_id", contractId);
+  const { data, error } = await supabase.rpc("get_contract_permissions", {
+    input_contract_id: contractId,
+  });
 
   if (error) throw new Error(error.message);
   return data.map(mapToContractPermission);
 };
 
-export const createContractPermission = async (
-  permission: ContractPermission
-): Promise<string> => {
+export const createUserPermission = async (
+  contractId: string,
+  email: string,
+  role: ContractPermissionRole
+): Promise<ContractPermission> => {
   await ensureUserLoggedIn();
-
-  const { data, error } = await supabase
-    .from(CONTRACT_PERMISSIONS_TABLE)
-    .insert(mapToContractPermissionDTO(permission))
-    .select("id");
-
+  const { data, error } = await supabase.rpc("add_contract_permission", {
+    input_contract_id: contractId,
+    input_email: email,
+    input_role: role,
+  });
   if (error) throw new Error(error.message);
-  return data[0].id as string;
+  return mapToContractPermission(data[0]);
 };
 
-export const deleteContractPermission = async (
-  id: string
+export const removeUserPermission = async (
+  contractId: string,
+  email: string
 ): Promise<boolean> => {
   await ensureUserLoggedIn();
-  const { error } = await supabase
-    .from(CONTRACT_PERMISSIONS_TABLE)
-    .delete()
-    .eq("id", id);
-
+  const { data, error } = await supabase.rpc("remove_contract_permission", {
+    input_contract_id: contractId,
+    input_email: email,
+  });
   if (error) throw new Error(error.message);
-  return true;
+  return data as boolean;
+};
+
+export const updateUserPermission = async (
+  contractId: string,
+  email: string,
+  role: ContractPermissionRole
+): Promise<ContractPermission> => {
+  await ensureUserLoggedIn();
+  const { data, error } = await supabase.rpc(
+    "update_contract_permission_role",
+    {
+      input_contract_id: contractId,
+      input_email: email,
+      new_role: role,
+    }
+  );
+  if (error) throw new Error(error.message);
+  return mapToContractPermission(data[0]);
 };

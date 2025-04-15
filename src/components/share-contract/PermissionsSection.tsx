@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,36 +9,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ContractPermissionRole } from "@/lib/database-types";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { useToast } from "@/hooks/useToast";
 import {
-  ContractPermission,
-  ContractPermissionRole,
-} from "@/lib/database-types";
+  grantUserPermission,
+  revokeUserPermission,
+  updateUserPermission,
+} from "@/store/slices/contractShare";
 
 interface PermissionsSectionProps {
-  contractPermissions: ContractPermission[];
-  onAddUser: (email: string, role: ContractPermissionRole) => void;
-  updateRole: (email: string, role: ContractPermissionRole) => void;
-  onRemoveUser: (email: string) => void;
+  contractId: string;
 }
 
 const ROLES: ContractPermissionRole[] = ["reader", "writer", "validator"];
 
-export function PermissionsSection({
-  contractPermissions,
-  onAddUser,
-  updateRole,
-  onRemoveUser,
-}: PermissionsSectionProps) {
+export function PermissionsSection({ contractId }: PermissionsSectionProps) {
+  const dispatch = useAppDispatch();
+  const { toast } = useToast();
+  const { permissions: contractPermissions } = useAppSelector(
+    (state) => state.contractShare
+  );
+
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<ContractPermissionRole>("reader");
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState("");
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email) {
@@ -51,14 +54,45 @@ export function PermissionsSection({
       return;
     }
 
-    if (contractPermissions.some((p) => p.userId === email)) {
+    if (contractPermissions.some((p) => p.userEmail === email)) {
       setEmailError("This user already has access");
       return;
     }
 
-    onAddUser(email, role);
+    const request = await dispatch(
+      grantUserPermission({ contractId, email, role })
+    );
+    if (request.meta.requestStatus === "fulfilled") {
+      toast({
+        title: "User Added",
+        description: `${email} has been granted ${role.toLowerCase()} access.`,
+      });
+    }
     setEmail("");
     setEmailError(null);
+  };
+
+  const updateRole = async (email: string, role: ContractPermissionRole) => {
+    const request = await dispatch(
+      updateUserPermission({ contractId, email, role })
+    );
+    if (request.meta.requestStatus === "fulfilled") {
+      toast({
+        title: "Role Updated",
+        description: `${email}'s role has been updated to ${role.toLowerCase()}.`,
+      });
+    }
+  };
+
+  const confirmRemoveUser = async (email: string) => {
+    const request = await dispatch(revokeUserPermission({ contractId, email }));
+    if (request.meta.requestStatus === "fulfilled") {
+      toast({
+        title: "User Removed",
+        description: `${email}'s access has been removed.`,
+      });
+    }
+    setConfirmDelete("");
   };
 
   return (
@@ -108,43 +142,67 @@ export function PermissionsSection({
               key={permission.id}
               className="flex items-center justify-between p-4"
             >
-              <span className="text-sm font-medium">{permission.userId}</span>
+              <span className="text-sm font-medium">
+                {permission.userEmail}
+              </span>
               <div className="flex items-center gap-2">
-                <Select
-                  disabled={permission.role === "owner"}
-                  value={permission.role}
-                  onValueChange={(value) =>
-                    updateRole(
-                      permission.userId,
-                      value as ContractPermissionRole
-                    )
-                  }
-                >
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {permission.role === "owner" ? (
-                      <SelectItem key="owner" value="owner">
-                        Owner
-                      </SelectItem>
-                    ) : (
-                      ROLES.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role.charAt(0).toUpperCase() + role.slice(1)}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                <Button
-                  disabled={permission.role === "owner"}
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onRemoveUser(permission.userId)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {confirmDelete === permission.userEmail ? (
+                  <>
+                    <Button
+                      size="icon"
+                      className="text-red-500"
+                      variant="outline"
+                      onClick={() => confirmRemoveUser(permission.userEmail)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => setConfirmDelete("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Select
+                      disabled={permission.role === "owner"}
+                      value={permission.role}
+                      onValueChange={(value) =>
+                        updateRole(
+                          permission.userEmail,
+                          value as ContractPermissionRole
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {permission.role === "owner" ? (
+                          <SelectItem key="owner" value="owner">
+                            Owner
+                          </SelectItem>
+                        ) : (
+                          ROLES.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {role.charAt(0).toUpperCase() + role.slice(1)}
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      disabled={permission.role === "owner"}
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setConfirmDelete(permission.userEmail)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           ))}

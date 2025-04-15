@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy, RefreshCw, Link2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import {
   createContractLink,
   deleteContractLink,
-  fetchContractLink,
   refreshLink,
   updateLinkIsActive,
 } from "@/store/slices/contractShare";
@@ -24,10 +23,6 @@ export function LinkSection({ contractId }: LinkSectionProps) {
   const { link: contractLink } = useAppSelector((state) => state.contractShare);
 
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    dispatch(fetchContractLink(contractId));
-  }, [dispatch, contractId]);
 
   const onGenerateLink = async () => {
     const request = await dispatch(createContractLink(contractId));

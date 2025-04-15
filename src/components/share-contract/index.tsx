@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,30 +8,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/useToast";
 import { LinkSection } from "./LinkSection";
 import { PermissionsSection } from "./PermissionsSection";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { hideLoading, showLoading } from "@/store/slices/loading";
 import {
-  ContractPermission,
-  ContractPermissionRole,
-} from "@/lib/database-types";
-
-const mockContractPermissions: ContractPermission[] = [
-  {
-    id: "1",
-    contractId: "1",
-    userId: "john.doe@example.com",
-    role: "owner",
-    createdAt: new Date(),
-  },
-  {
-    id: "2",
-    contractId: "1",
-    userId: "jane.doe@example.com",
-    role: "writer",
-    createdAt: new Date(),
-  },
-];
+  fetchContractLink,
+  fetchContractPermissions,
+} from "@/store/slices/contractShare";
+import { useToast } from "@/hooks/useToast";
 
 interface ShareContractDialogProps {
   open: boolean;
@@ -44,66 +29,45 @@ export function ShareContractDialog({
   onOpenChange,
   contractId,
 }: ShareContractDialogProps) {
-  const [contractPermissions, setContractPermissions] = useState<
-    ContractPermission[]
-  >(mockContractPermissions);
+  const dispatch = useAppDispatch();
   const { toast } = useToast();
 
-  const onAddUser = (email: string, role: ContractPermissionRole) => {
-    const newPermission: ContractPermission = {
-      id: Math.random().toString(),
-      contractId: "1",
-      userId: email,
-      role: role,
-      createdAt: new Date(),
-    };
-    setContractPermissions([...contractPermissions, newPermission]);
-    toast({
-      title: "User Added",
-      description: `${email} has been granted ${role.toLowerCase()} access.`,
-    });
-  };
+  const { loading, error } = useAppSelector((state) => state.contractShare);
 
-  const updateRole = (email: string, role: ContractPermissionRole) => {
-    setContractPermissions(
-      contractPermissions.map((permission) =>
-        permission.userId === email ? { ...permission, role } : permission
-      )
-    );
-    toast({
-      title: "Role Updated",
-      description: `${email}'s role has been updated to ${role.toLowerCase()}.`,
-    });
-  };
+  useEffect(() => {
+    if (loading) {
+      dispatch(showLoading());
+    } else {
+      dispatch(hideLoading());
+    }
+  }, [dispatch, loading]);
 
-  const onRemoveUser = (email: string) => {
-    setContractPermissions(
-      contractPermissions.filter((permission) => permission.userId !== email)
-    );
-    toast({
-      title: "User Removed",
-      description: `${email}'s access has been removed.`,
-    });
-  };
+  useEffect(() => {
+    if (contractId) {
+      dispatch(fetchContractLink(contractId));
+      dispatch(fetchContractPermissions(contractId));
+    }
+  }, [dispatch, contractId]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [toast, error]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={!loading && open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Share Contract</DialogTitle>
         </DialogHeader>
-
         <LinkSection contractId={contractId} />
-
         <Separator className="my-6" />
-
-        <PermissionsSection
-          contractPermissions={contractPermissions}
-          onAddUser={onAddUser}
-          updateRole={updateRole}
-          onRemoveUser={onRemoveUser}
-        />
-
+        <PermissionsSection contractId={contractId} />
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
