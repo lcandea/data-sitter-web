@@ -132,7 +132,9 @@ export function LinkSection({ contractId }: LinkSectionProps) {
             checked={contractLink.isActive}
             onCheckedChange={toggleActive}
           />
-          <Label htmlFor="link-active">Active</Label>
+          <Label htmlFor="link-active">
+            {contractLink.isActive ? "Active" : "Inactive"}
+          </Label>
         </div>
       </div>
     </div>

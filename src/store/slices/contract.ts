@@ -117,9 +117,10 @@ export const createContract = createAppAsyncThunk(
 
 export const updateContract = createAppAsyncThunk(
   "contract/updateContract",
-  async (id: string, { getState }) => {
+  async (contractId: string, { getState }) => {
     const { id: storedId, name, fields } = getState().contract;
-    if (id != storedId) throw Error("IDs does not match when trying to update");
+    if (contractId != storedId)
+      throw Error("IDs does not match when trying to update");
     if (!name) throw Error("Contract name cannot be empty or null.");
     const { values } = getState().values;
     const updatedContract = formatContractForExport({
@@ -128,7 +129,16 @@ export const updateContract = createAppAsyncThunk(
       fields,
       values,
     });
-    await db.updateContract(id, updatedContract);
+    await db.updateContract(contractId, updatedContract);
+  }
+);
+
+export const deleteContract = createAppAsyncThunk(
+  "contract/deleteContract",
+  async (contractId: string) => {
+    const deleted = await db.deleteContract(contractId);
+    if (deleted) return contractId;
+    return null;
   }
 );
 
@@ -181,6 +191,14 @@ const contractSlice = createSlice({
         const { name, fields } = action.payload;
         state.name = name;
         state.fields = fields;
+      })
+      .addCase(deleteContract.fulfilled, (state, action) => {
+        const deletedContractId = action.payload;
+        if (deletedContractId) {
+          state.userContracts = state.userContracts.filter(
+            (p) => p.id !== deletedContractId
+          );
+        }
       })
       .addMatcher(
         (action): action is PayloadAction =>

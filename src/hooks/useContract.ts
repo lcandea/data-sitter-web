@@ -63,6 +63,9 @@ export const useContract = () => {
     dispatch(csActions.setName(null));
     dispatch(csActions.setFields([]));
     dispatch(vActions.setValues([]));
+    setName("");
+    setFields([]);
+    setValues([]);
   }, [dispatch]);
 
   const setContract = useCallback((newContract: Contract) => {

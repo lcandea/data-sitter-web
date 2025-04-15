@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { fetchUserContracts } from "@/store/slices/contract";
+import { deleteContract, fetchUserContracts } from "@/store/slices/contract";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ShareContractDialog } from "@/components/share-contract";
 import { ContractPermissionRole } from "@/lib/database-types";
@@ -71,8 +71,7 @@ export function ContractsPage() {
 
   const confirmDelete = () => {
     if (selectedContractId) {
-      // Here you would dispatch an action to delete the contract
-      console.log(`Deleting contract ${selectedContractId}`);
+      dispatch(deleteContract(selectedContractId));
     }
     setDeleteDialogOpen(false);
   };
@@ -112,7 +111,7 @@ export function ContractsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-center gap-2 h-9">
-                    {contract.role !== "owner" && (
+                    {contract.role === "owner" && (
                       <>
                         <Button
                           variant="ghost"

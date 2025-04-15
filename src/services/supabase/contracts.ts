@@ -59,7 +59,7 @@ export const createContract = async (contract: Contract): Promise<string> => {
 };
 
 export const updateContract = async (
-  id: string,
+  contractId: string,
   newContract: Contract
 ): Promise<boolean> => {
   await ensureUserLoggedIn();
@@ -71,7 +71,18 @@ export const updateContract = async (
   const { error } = await supabase
     .from(CONTRACTS_TABLE)
     .update(toUpdate)
-    .eq("id", id);
+    .eq("id", contractId);
+  if (error) throw new Error(error.message);
+  return true;
+};
+
+export const deleteContract = async (contractId: string): Promise<boolean> => {
+  await ensureUserLoggedIn();
+
+  const { error } = await supabase
+    .from(CONTRACTS_TABLE)
+    .delete()
+    .eq("id", contractId);
   if (error) throw new Error(error.message);
   return true;
 };
