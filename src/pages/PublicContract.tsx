@@ -11,6 +11,7 @@ import { useContract } from "@/hooks/useContract";
 import { useAppDispatch } from "@/hooks/useStore";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
+import { clearError } from "@/store/slices/contract";
 
 export function PublicContractPage() {
   const { publicToken } = useParams();
@@ -24,6 +25,7 @@ export function PublicContractPage() {
     contract,
     hasChanged,
     setContract,
+    clearContract,
     fetchPublicContract,
     importContract,
     saveLocalChanges,
@@ -32,8 +34,10 @@ export function PublicContractPage() {
   useEffect(() => {
     if (publicToken) {
       fetchPublicContract(publicToken);
+    } else {
+      clearContract();
     }
-  }, [fetchPublicContract, publicToken]);
+  }, [fetchPublicContract, clearContract, publicToken]);
 
   useEffect(() => {
     if (loading) {
@@ -109,6 +113,7 @@ export function PublicContractPage() {
       <ErrorDialog
         open={!!error}
         onOpenChange={() => {
+          dispatch(clearError());
           navigate("/");
         }}
         message={error!}

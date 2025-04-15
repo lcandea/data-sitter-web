@@ -55,7 +55,6 @@ export const createConctract = async (contract: Contract): Promise<string> => {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("User not logged in.");
   const toInsert = {
-    user_id: user.id,
     name: contract.name,
     contract,
   };

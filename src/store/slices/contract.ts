@@ -136,7 +136,7 @@ const contractSlice = createSlice({
   name: "contract",
   initialState,
   reducers: {
-    setName: (state, action: PayloadAction<string>) => {
+    setName: (state, action: PayloadAction<string | null>) => {
       state.name = action.payload;
     },
     setFields: (state, action: PayloadAction<ContractField[]>) => {

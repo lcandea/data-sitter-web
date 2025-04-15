@@ -4,6 +4,7 @@ import { Contract, ContractField, ContractValue, DataInput } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "./useStore";
 
 import * as csActions from "../store/slices/contract";
+import * as vActions from "../store/slices/values";
 import { DataSitterValidator } from "data-sitter";
 import { formatContractForExport } from "@/lib/contract-utils";
 
@@ -57,6 +58,12 @@ export const useContract = () => {
       { name, values, fields }
     );
   }, [storedName, storedFields, storedValues, name, values, fields]);
+
+  const clearContract = () => {
+    dispatch(csActions.setName(null));
+    dispatch(csActions.setFields([]));
+    dispatch(vActions.setValues([]));
+  };
 
   const setContract = (newContract: Contract) => {
     setName(newContract.name);
@@ -131,6 +138,7 @@ export const useContract = () => {
     error,
     loading,
     setContract,
+    clearContract,
     fetchContract,
     fetchPublicContract,
     importContract,

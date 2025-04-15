@@ -24,6 +24,7 @@ export function ContractPage() {
     contract,
     hasChanged,
     setContract,
+    clearContract,
     fetchContract,
     importContract,
     persistContract,
@@ -32,8 +33,10 @@ export function ContractPage() {
   useEffect(() => {
     if (id) {
       fetchContract(id);
+    } else {
+      clearContract();
     }
-  }, [fetchContract, id]);
+  }, [fetchContract, clearContract, id]);
 
   useEffect(() => {
     if (loading) {
