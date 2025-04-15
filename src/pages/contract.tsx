@@ -32,11 +32,13 @@ export function ContractPage() {
 
   useEffect(() => {
     if (id) {
-      fetchContract(id);
+      if (!contract || contract.id !== id) {
+        fetchContract(id);
+      }
     } else {
       clearContract();
     }
-  }, [fetchContract, clearContract, id]);
+  }, [fetchContract, clearContract, id, contract]);
 
   useEffect(() => {
     if (loading) {
