@@ -20,7 +20,7 @@ interface ContractState {
   id: string | null;
   name: string | null;
   fields: ContractField[];
-  user_contracts: ContractPreview[];
+  userContracts: ContractPreview[];
   loading: boolean;
   error: string | null;
 }
@@ -29,7 +29,7 @@ const initialState: ContractState = {
   id: null,
   name: null,
   fields: [],
-  user_contracts: [],
+  userContracts: [],
   loading: false,
   error: null,
 };
@@ -98,8 +98,8 @@ export const importContract = createAppAsyncThunk(
   }
 );
 
-export const createConctract = createAppAsyncThunk(
-  "contract/createConctract",
+export const createContract = createAppAsyncThunk(
+  "contract/createContract",
   async (_, { getState }) => {
     const { name, fields } = getState().contract;
     if (!name) throw Error("Contract name cannot be empty or null.");
@@ -110,13 +110,13 @@ export const createConctract = createAppAsyncThunk(
       fields,
       values,
     });
-    const id = db.createConctract(newContract);
+    const id = db.createContract(newContract);
     return id;
   }
 );
 
-export const updateConctract = createAppAsyncThunk(
-  "contract/updateConctract",
+export const updateContract = createAppAsyncThunk(
+  "contract/updateContract",
   async (id: string, { getState }) => {
     const { id: storedId, name, fields } = getState().contract;
     if (id != storedId) throw Error("IDs does not match when trying to update");
@@ -128,7 +128,7 @@ export const updateConctract = createAppAsyncThunk(
       fields,
       values,
     });
-    await db.updateConctract(id, updatedContract);
+    await db.updateContract(id, updatedContract);
   }
 );
 
@@ -155,7 +155,7 @@ const contractSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchUserContracts.fulfilled, (state, action) => {
-        state.user_contracts = action.payload;
+        state.userContracts = action.payload;
       })
       .addCase(fetchContract.fulfilled, (state, action) => {
         if (action.payload) {
@@ -173,7 +173,7 @@ const contractSlice = createSlice({
           state.fields = fields;
         }
       })
-      .addCase(createConctract.fulfilled, (state, action) => {
+      .addCase(createContract.fulfilled, (state, action) => {
         const id = action.payload;
         state.id = id;
       })

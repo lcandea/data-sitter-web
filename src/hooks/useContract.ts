@@ -59,16 +59,16 @@ export const useContract = () => {
     );
   }, [storedName, storedFields, storedValues, name, values, fields]);
 
-  const clearContract = () => {
+  const clearContract = useCallback(() => {
     dispatch(csActions.setName(null));
     dispatch(csActions.setFields([]));
     dispatch(vActions.setValues([]));
-  };
+  }, [dispatch]);
 
-  const setContract = (newContract: Contract) => {
+  const setContract = useCallback((newContract: Contract) => {
     setName(newContract.name);
     setFields(newContract.fields);
-  };
+  }, []);
 
   const fetchContract = useCallback(
     (id: string) => {
@@ -105,11 +105,11 @@ export const useContract = () => {
     if (name != storedName) dispatch(csActions.setName(name));
     if (!isEqual(fields, storedFields)) dispatch(csActions.setFields(fields));
     if (id) {
-      await dispatch(csActions.updateConctract(id));
+      await dispatch(csActions.updateContract(id));
       return id;
     } else {
-      const resultAction = await dispatch(csActions.createConctract());
-      if (csActions.createConctract.fulfilled.match(resultAction)) {
+      const resultAction = await dispatch(csActions.createContract());
+      if (csActions.createContract.fulfilled.match(resultAction)) {
         return resultAction.payload;
       }
     }

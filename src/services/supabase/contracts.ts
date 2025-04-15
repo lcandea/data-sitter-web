@@ -1,5 +1,5 @@
 import { ContractPreview } from "@/lib/database-types";
-import { supabase } from "./supabase";
+import { ensureUserLoggedIn, supabase } from "./supabase";
 
 interface Contract {
   name: string;
@@ -15,10 +15,7 @@ interface Field {
 const CONTRACTS_TABLE = "contracts";
 
 export const fetchContract = async (id: string): Promise<Contract | null> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not logged in.");
+  await ensureUserLoggedIn();
   const contracts = await supabase
     .from(CONTRACTS_TABLE)
     .select("contract")
@@ -40,41 +37,32 @@ export const fetchPublicContract = async (
 };
 
 export const fetchUserContracts = async (): Promise<ContractPreview[]> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not logged in.");
+  await ensureUserLoggedIn();
   const { data, error } = await supabase.rpc("get_contracts");
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const createConctract = async (contract: Contract): Promise<string> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not logged in.");
-  const toInsert = {
-    name: contract.name,
-    contract,
-  };
-  const { data, error } = await supabase
-    .from(CONTRACTS_TABLE)
-    .insert(toInsert)
-    .select("id");
+export const createContract = async (contract: Contract): Promise<string> => {
+  await ensureUserLoggedIn();
+  console.log("contract", contract);
+  const { data, error } = await supabase.rpc(
+    "insert_contract_with_permission",
+    {
+      input_json: contract,
+    }
+  );
+
   if (error) throw new Error(error.message);
-  console.log("contract/createConctract id:", data);
-  return data[0].id as string;
+  console.log("contract/createContract id:", data);
+  return data as string;
 };
 
-export const updateConctract = async (
+export const updateContract = async (
   id: string,
   newContract: Contract
 ): Promise<boolean> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not logged in.");
+  await ensureUserLoggedIn();
 
   const toUpdate = {
     name: newContract.name,

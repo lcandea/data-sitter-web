@@ -32,7 +32,7 @@ const roleDisplayMap: Record<
 export function ContractsPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user_contracts, loading, error } = useAppSelector(
+  const { userContracts, loading, error } = useAppSelector(
     (state) => state.contract
   );
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -95,14 +95,14 @@ export function ContractsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {user_contracts.map((contract) => (
+            {userContracts.map((contract) => (
               <TableRow
                 key={contract.id}
                 className="cursor-pointer hover:bg-muted/50"
                 onClick={() => navigate(`/contract/${contract.id}`)}
               >
                 <TableCell className="font-medium">{contract.name}</TableCell>
-                <TableCell>
+                <TableCell className="text-center">
                   <Badge variant={roleDisplayMap[contract.role].variant}>
                     {roleDisplayMap[contract.role].label}
                   </Badge>
@@ -110,27 +110,29 @@ export function ContractsPage() {
                 <TableCell className="text-center">
                   {contract.fields_count}
                 </TableCell>
-                {contract.role === "owner" && (
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => handleShare(contract.id, e)}
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => handleDelete(contract.id, e)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                )}
+                <TableCell>
+                  <div className="flex items-center justify-center gap-2 h-9">
+                    {contract.role !== "owner" && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => handleShare(contract.id, e)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => handleDelete(contract.id, e)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
