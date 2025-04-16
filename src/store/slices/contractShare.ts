@@ -1,10 +1,4 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  isPending,
-  isFulfilled,
-  isRejected,
-} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import {
   ContractLink,
   ContractPermission,
@@ -12,13 +6,15 @@ import {
 } from "@/lib/database-types";
 import * as linkDb from "@/services/supabase/contract-links";
 import * as permDb from "@/services/supabase/contract-permissions";
-import { createAppAsyncThunk } from "..";
+import {
+  createAppAsyncThunk,
+  createLoadingAndErrorMatch,
+  WithLoadingAndError,
+} from "..";
 
-interface ContractShareState {
+interface ContractShareState extends WithLoadingAndError {
   link: ContractLink | null;
   permissions: ContractPermission[];
-  loading: boolean;
-  error: string | null;
 }
 
 const initialState: ContractShareState = {
@@ -72,14 +68,14 @@ export const deleteContractLink = createAppAsyncThunk(
   }
 );
 
-export const fetchContractPermissions = createAsyncThunk(
+export const fetchContractPermissions = createAppAsyncThunk(
   "contractShare/fetchContractPermissions",
   async (contractId: string) => {
     return await permDb.fetchContractPermissions(contractId);
   }
 );
 
-export const grantUserPermission = createAsyncThunk(
+export const grantUserPermission = createAppAsyncThunk(
   "contractShare/grantUserPermission",
   async ({
     contractId,
@@ -94,7 +90,7 @@ export const grantUserPermission = createAsyncThunk(
   }
 );
 
-export const revokeUserPermission = createAsyncThunk(
+export const revokeUserPermission = createAppAsyncThunk(
   "contractShare/revokeUserPermission",
   async ({ contractId, email }: { contractId: string; email: string }) => {
     const result = await permDb.removeUserPermission(contractId, email);
@@ -103,7 +99,7 @@ export const revokeUserPermission = createAsyncThunk(
   }
 );
 
-export const updateUserPermission = createAsyncThunk(
+export const updateUserPermission = createAppAsyncThunk(
   "contractShare/updateUserPermission",
   async ({
     contractId,
@@ -163,36 +159,8 @@ const contractShareSlice = createSlice({
           p.id === updatedRecord.id ? updatedRecord : p
         );
         console.log("state.permissions", state.permissions);
-      })
-      .addMatcher(
-        (action): action is ReturnType<typeof isPending> =>
-          isPending(action) && action.type.startsWith("contractShare/"),
-        (state) => {
-          state.loading = true;
-          state.error = null;
-        }
-      )
-      .addMatcher(
-        (action): action is ReturnType<typeof isFulfilled> =>
-          isFulfilled(action) && action.type.startsWith("contractShare/"),
-        (state) => {
-          state.loading = false;
-        }
-      )
-      .addMatcher(
-        (action): action is ReturnType<typeof isRejected> =>
-          isRejected(action) && action.type.startsWith("contractShare/"),
-        (state, action) => {
-          state.loading = false;
-          if ("error" in action) {
-            state.error =
-              (action.error as { message?: string }).message ||
-              "An error occurred";
-          } else {
-            state.error = "An error occurred";
-          }
-        }
-      );
+      });
+    createLoadingAndErrorMatch("contractShare/")(builder);
   },
 });
 

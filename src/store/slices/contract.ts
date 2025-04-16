@@ -1,12 +1,10 @@
-import {
-  createSlice,
-  isFulfilled,
-  isPending,
-  isRejected,
-  PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Contract, ContractField } from "@/lib/types";
-import { createAppAsyncThunk } from "..";
+import {
+  createAppAsyncThunk,
+  createLoadingAndErrorMatch,
+  WithLoadingAndError,
+} from "..";
 import {
   contractFromImportData,
   formatContractForExport,
@@ -16,13 +14,11 @@ import { DataSitterValidator } from "data-sitter";
 import { setValues } from "./values";
 import { ContractPreview } from "@/lib/database-types";
 
-interface ContractState {
+interface ContractState extends WithLoadingAndError {
   id: string | null;
   name: string | null;
   fields: ContractField[];
   userContracts: ContractPreview[];
-  loading: boolean;
-  error: string | null;
 }
 
 const initialState: ContractState = {
@@ -199,36 +195,8 @@ const contractSlice = createSlice({
             (p) => p.id !== deletedContractId
           );
         }
-      })
-      .addMatcher(
-        (action): action is PayloadAction =>
-          isPending(action) && action.type.startsWith("contract/"),
-        (state) => {
-          state.loading = true;
-          state.error = null;
-        }
-      )
-      .addMatcher(
-        (action): action is PayloadAction =>
-          isFulfilled(action) && action.type.startsWith("contract/"),
-        (state) => {
-          state.loading = false;
-        }
-      )
-      .addMatcher(
-        (action): action is ReturnType<typeof isRejected> =>
-          isRejected(action) && action.type.startsWith("contract/"),
-        (state, action) => {
-          state.loading = false;
-          if ("error" in action) {
-            state.error =
-              (action.error as { message?: string }).message ||
-              "An error occurred";
-          } else {
-            state.error = "An error occurred";
-          }
-        }
-      );
+      });
+    createLoadingAndErrorMatch("contract/")(builder);
   },
 });
 export const { setName, setFields, setContract, clearError } =

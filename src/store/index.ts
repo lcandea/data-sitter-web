@@ -1,4 +1,12 @@
-import { configureStore, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  createAsyncThunk,
+  isPending,
+  isFulfilled,
+  isRejected,
+  ActionReducerMapBuilder,
+  PayloadAction,
+} from "@reduxjs/toolkit";
 import valuesReducer from "./slices/values";
 import contractReducer from "./slices/contract";
 import validationReducer from "./slices/validation";
@@ -34,3 +42,43 @@ export function createAppAsyncThunk<ReturnType = void, ArgType = void>(
     payloadCreator
   );
 }
+
+export type WithLoadingAndError = {
+  loading: boolean;
+  error: string | null;
+};
+
+export const createLoadingAndErrorMatch =
+  <T extends WithLoadingAndError>(sliceName: string) =>
+  (builder: ActionReducerMapBuilder<T>) => {
+    builder
+      .addMatcher(
+        (action): action is PayloadAction =>
+          isPending(action) && action.type.startsWith(sliceName),
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
+      )
+      .addMatcher(
+        (action): action is PayloadAction =>
+          isFulfilled(action) && action.type.startsWith(sliceName),
+        (state) => {
+          state.loading = false;
+        }
+      )
+      .addMatcher(
+        (action): action is PayloadAction =>
+          isRejected(action) && action.type.startsWith(sliceName),
+        (state, action) => {
+          state.loading = false;
+          if ("error" in action) {
+            state.error =
+              (action.error as { message?: string }).message ||
+              "An error occurred";
+          } else {
+            state.error = "An error occurred";
+          }
+        }
+      );
+  };
