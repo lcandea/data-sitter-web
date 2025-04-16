@@ -61,6 +61,16 @@ export type Contract = {
   values: ContractValue[];
 };
 
+export interface DSContract {
+  name: string;
+  fields: {
+    field_name: string;
+    field_type: string;
+    field_rules: string[];
+  }[];
+  values: Record<string, unknown>;
+}
+
 export interface EditorProps {
   value: string;
   onChange: (value: string) => void;

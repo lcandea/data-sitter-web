@@ -104,9 +104,7 @@ export const useContract = () => {
 
   const persistContract = async () => {
     if (!hasChanged) return;
-    if (!name || name === "") throw new Error("Name cannot be empty.");
-    if (name != storedName) dispatch(csActions.setName(name));
-    if (!isEqual(fields, storedFields)) dispatch(csActions.setFields(fields));
+    await saveLocalChanges();
     if (id) {
       await dispatch(csActions.updateContract(id));
       return id;

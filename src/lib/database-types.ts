@@ -3,7 +3,8 @@ export type ContractPermissionRole =
   | "reader"
   | "writer"
   | "validator"
-  | "owner";
+  | "owner"
+  | "local";
 
 export interface ContractPreview {
   id: string;
