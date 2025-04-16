@@ -17,6 +17,7 @@ import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ShareContractDialog } from "@/components/share-contract";
 import { ContractPermissionRole } from "@/lib/database-types";
 import { Badge } from "@/components/ui/badge";
+import { ErrorDialog } from "@/components/ui/ErrorDialog";
 
 // Role display mapping
 const roleDisplayMap: Record<
@@ -27,6 +28,7 @@ const roleDisplayMap: Record<
   writer: { label: "Writer", variant: "secondary" },
   validator: { label: "Validator", variant: "outline" },
   reader: { label: "Reader", variant: "outline" },
+  local: { label: "Local", variant: "default" },
 };
 
 export function ContractsPage() {
@@ -52,10 +54,6 @@ export function ContractsPage() {
       dispatch(hideLoading());
     }
   }, [dispatch, loading]);
-
-  if (error) {
-    return <h1>Error: {error}</h1>;
-  }
 
   const handleShare = (contractId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -111,15 +109,17 @@ export function ContractsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-center gap-2 h-9">
-                    {contract.role === "owner" && (
+                    {["local", "local"].includes(contract.role) && (
                       <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => handleShare(contract.id, e)}
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
+                        {contract.role === "owner" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleShare(contract.id, e)}
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -153,6 +153,14 @@ export function ContractsPage() {
         message="Are you sure you want to delete this contract? This action cannot be undone."
         confirmText="Delete"
         onConfirm={confirmDelete}
+      />
+
+      <ErrorDialog
+        open={!!error}
+        onOpenChange={() => {
+          navigate("/");
+        }}
+        message={error!}
       />
     </div>
   );

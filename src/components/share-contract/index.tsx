@@ -43,21 +43,21 @@ export function ShareContractDialog({
   }, [dispatch, loading]);
 
   useEffect(() => {
-    if (contractId) {
+    if (contractId && open) {
       dispatch(fetchContractLink(contractId));
       dispatch(fetchContractPermissions(contractId));
     }
-  }, [dispatch, contractId]);
+  }, [dispatch, contractId, open]);
 
   useEffect(() => {
-    if (error) {
+    if (error && open) {
       toast({
         title: "Error",
         description: error,
         variant: "destructive",
       });
     }
-  }, [toast, error]);
+  }, [toast, error, open]);
 
   return (
     <Dialog open={!loading && open} onOpenChange={onOpenChange}>

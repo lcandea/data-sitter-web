@@ -6,6 +6,7 @@ import {
   formatContractForExport,
 } from "@/lib/contract-utils";
 import * as db from "@/services/supabase/contracts";
+import * as ls from "@/services/local-store";
 import { DataSitterValidator } from "data-sitter";
 import { setValues } from "./values";
 import { ContractPreview } from "@/lib/database-types";
@@ -30,15 +31,19 @@ const initialState: ContractState = {
 export const fetchUserContracts = createAppAsyncThunk(
   "contract/fetchUserContracts",
   async () => {
-    const contracts = await db.fetchUserContracts();
-    return contracts;
+    // const remoteContracts = await db.fetchUserContracts();
+    const localContracts = await ls.fetchUserContracts();
+    // return remoteContracts.concat(localContracts);
+    return localContracts;
   }
 );
 
 export const fetchContract = createAppAsyncThunk(
   "contract/fetchContract",
   async (id: string, { dispatch }) => {
-    const contract = await db.fetchContract(id);
+    const source = id.startsWith("local-") ? ls : db;
+    const contract = await source.fetchContract(id);
+
     if (contract) {
       const validator = new DataSitterValidator(contract);
       const { name, fields, values } = contractFromImportData(
@@ -102,7 +107,7 @@ export const createContract = createAppAsyncThunk(
       fields,
       values,
     });
-    const id = db.createContract(newContract);
+    const id = ls.createContract(newContract);
     return id;
   }
 );
@@ -121,14 +126,16 @@ export const updateContract = createAppAsyncThunk(
       fields,
       values,
     });
-    await db.updateContract(contractId, updatedContract);
+    const source = contractId.startsWith("local-") ? ls : db;
+    await source.updateContract(contractId, updatedContract);
   }
 );
 
 export const deleteContract = createAppAsyncThunk(
   "contract/deleteContract",
   async (contractId: string) => {
-    const deleted = await db.deleteContract(contractId);
+    const source = contractId.startsWith("local-") ? ls : db;
+    const deleted = await source.deleteContract(contractId);
     if (deleted) return contractId;
     return null;
   }

@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import { store } from "./store";
 import App from "./App.tsx";
 import "./index.css";
-import { AuthProvider } from "./context/AuthContext.tsx";
+import { AuthListener } from "./store/authListener.ts";
 
 // Set dark mode as default
 document.documentElement.classList.add("dark");
@@ -13,15 +13,14 @@ document.documentElement.classList.add("dark");
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
+      <AuthListener />
       <BrowserRouter
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true,
         }}
       >
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <App />
       </BrowserRouter>
     </Provider>
   </StrictMode>

@@ -4,7 +4,6 @@ import { Landing } from "@/pages/Landing";
 import { ContractPage } from "@/pages/contract";
 import { ValidatePage } from "@/pages/validate";
 import { Footer } from "@/components/Footer";
-import { PrivateRoute } from "./components/PrivateRoute";
 import { ContractsPage } from "./pages/contracts";
 import { LoadingOverlay } from "./components/LoadingOverlay";
 import { Toaster } from "./components/ui/toaster";
@@ -32,9 +31,7 @@ function App() {
               <Route path=":publicToken/validate" element={<ValidatePage />} />
             </Route>
 
-            <Route element={<PrivateRoute />}>
-              <Route path="contracts" element={<ContractsPage />} />
-            </Route>
+            <Route path="contracts" element={<ContractsPage />} />
           </Routes>
         </div>
       </main>

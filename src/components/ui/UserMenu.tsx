@@ -16,15 +16,17 @@ import { LogIn, Menu, User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import { LogInDialog } from "./logInDialog";
 import { useMemo, useState } from "react";
 import { Button } from "./button";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { logout } from "@/store/slices/auth";
 
 export const UserMenu = () => {
-  const { user, logout } = useAuth();
-  const [openLogin, setOpenLogin] = useState(false);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
+  const [openLogin, setOpenLogin] = useState(false);
 
   const userInfo = useMemo(() => {
     if (user) {
@@ -48,7 +50,7 @@ export const UserMenu = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
   };
 
   return (
@@ -57,21 +59,18 @@ export const UserMenu = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                {user ? (
-                  <>
-                    <AvatarImage
-                      src={userInfo.avatar}
-                      alt={userInfo.fallback}
-                    />
-                    <AvatarFallback>{userInfo.fallback}</AvatarFallback>
-                  </>
-                ) : (
+              {user ? (
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userInfo.avatar} alt={userInfo.fallback} />
+                  <AvatarFallback>{userInfo.fallback}</AvatarFallback>
+                </Avatar>
+              ) : (
+                <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-muted">
                     <User className="h-4 w-4 text-muted-foreground" />
                   </AvatarFallback>
-                )}
-              </Avatar>
+                </Avatar>
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
