@@ -6,11 +6,8 @@ import {
 } from "@/lib/database-types";
 import * as linkDb from "@/services/supabase/contract-links";
 import * as permDb from "@/services/supabase/contract-permissions";
-import {
-  createAppAsyncThunk,
-  createLoadingAndErrorMatch,
-  WithLoadingAndError,
-} from "..";
+import { createAppAsyncThunk } from "..";
+import { createLoadingAndErrorMatch, WithLoadingAndError } from "../helpers";
 
 interface ContractShareState extends WithLoadingAndError {
   link: ContractLink | null;
@@ -154,11 +151,9 @@ const contractShareSlice = createSlice({
       })
       .addCase(updateUserPermission.fulfilled, (state, action) => {
         const updatedRecord = action.payload;
-        console.log("updatedRecord", updatedRecord);
         state.permissions = state.permissions.map((p) =>
           p.id === updatedRecord.id ? updatedRecord : p
         );
-        console.log("state.permissions", state.permissions);
       });
     createLoadingAndErrorMatch("contractShare/")(builder);
   },

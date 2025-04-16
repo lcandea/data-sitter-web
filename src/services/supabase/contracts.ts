@@ -45,7 +45,6 @@ export const fetchUserContracts = async (): Promise<ContractPreview[]> => {
 
 export const createContract = async (contract: Contract): Promise<string> => {
   await ensureUserLoggedIn();
-  console.log("contract", contract);
   const { data, error } = await supabase.rpc(
     "insert_contract_with_permission",
     {
@@ -54,7 +53,6 @@ export const createContract = async (contract: Contract): Promise<string> => {
   );
 
   if (error) throw new Error(error.message);
-  console.log("contract/createContract id:", data);
   return data as string;
 };
 

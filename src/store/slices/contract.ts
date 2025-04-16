@@ -1,10 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Contract, ContractField } from "@/lib/types";
-import {
-  createAppAsyncThunk,
-  createLoadingAndErrorMatch,
-  WithLoadingAndError,
-} from "..";
+import { createAppAsyncThunk } from "..";
 import {
   contractFromImportData,
   formatContractForExport,
@@ -13,6 +9,7 @@ import * as db from "@/services/supabase/contracts";
 import { DataSitterValidator } from "data-sitter";
 import { setValues } from "./values";
 import { ContractPreview } from "@/lib/database-types";
+import { createLoadingAndErrorMatch, WithLoadingAndError } from "../helpers";
 
 interface ContractState extends WithLoadingAndError {
   id: string | null;
@@ -41,7 +38,6 @@ export const fetchUserContracts = createAppAsyncThunk(
 export const fetchContract = createAppAsyncThunk(
   "contract/fetchContract",
   async (id: string, { dispatch }) => {
-    console.log("contract/fetchContract id:", id);
     const contract = await db.fetchContract(id);
     if (contract) {
       const validator = new DataSitterValidator(contract);

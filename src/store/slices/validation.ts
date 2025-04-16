@@ -1,10 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {
-  createAppAsyncThunk,
-  createLoadingAndErrorMatch,
-  WithLoadingAndError,
-} from "..";
+import { createAppAsyncThunk } from "..";
 import { Validation } from "data-sitter";
+import { createLoadingAndErrorMatch, WithLoadingAndError } from "../helpers";
 
 interface ValidationState extends WithLoadingAndError {
   validationResult: Validation[] | null;
