@@ -166,7 +166,7 @@ export function Landing() {
       </div>
       <div className="flex gap-4 mt-10">
         <Button size="lg" asChild>
-          <Link to="/contract">Get Started</Link>
+          <Link to="../contract">Get Started</Link>
         </Button>
         <Button size="lg" variant="outline" asChild>
           <a
@@ -321,7 +321,7 @@ export function Landing() {
         </p>
         <div className="flex gap-4 justify-center">
           <Button size="lg" asChild>
-            <Link to="/contract">Create Contract</Link>
+            <Link to="../contract">Create Contract</Link>
           </Button>
           <Button size="lg" variant="outline" asChild>
             <a

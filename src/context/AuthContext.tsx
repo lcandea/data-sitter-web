@@ -6,7 +6,6 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -63,34 +62,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     );
 
     return () => {
-      // Clean up subscription when component unmounts
       authListener.subscription.unsubscribe();
     };
   }, []);
 
-  const login = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      console.log("User logged in:", data.user);
-    } catch (error) {
-      console.error("Error during login:", error);
-      throw error;
-    }
-  };
-
   const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-      console.log("User logged out");
-    } catch (error) {
-      console.error("Error during logout:", error);
-      throw error;
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      throw new Error(error.message);
     }
   };
 
@@ -98,7 +77,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     user,
     session,
     loading,
-    login,
     logout,
   };
 

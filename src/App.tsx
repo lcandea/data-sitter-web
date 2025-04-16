@@ -21,19 +21,19 @@ function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
 
-            <Route path="/contract">
+            <Route path="contract">
               <Route index element={<ContractPage />} />
               <Route path=":id" element={<ContractPage />} />
               <Route path=":id/validate" element={<ValidatePage />} />
             </Route>
 
-            <Route path="/shared">
+            <Route path="shared">
               <Route path=":publicToken" element={<PublicContractPage />} />
               <Route path=":publicToken/validate" element={<ValidatePage />} />
             </Route>
 
             <Route element={<PrivateRoute />}>
-              <Route path="/contracts" element={<ContractsPage />} />
+              <Route path="contracts" element={<ContractsPage />} />
             </Route>
           </Routes>
         </div>

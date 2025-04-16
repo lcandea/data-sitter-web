@@ -38,7 +38,7 @@ export function ContractPage() {
     } else {
       clearContract();
     }
-  }, [fetchContract, clearContract, id, contract]);
+  }, [id]);
 
   useEffect(() => {
     if (loading) {
