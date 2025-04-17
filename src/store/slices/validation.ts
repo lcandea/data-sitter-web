@@ -25,9 +25,9 @@ const validationSlice = createSlice({
   initialState,
   reducers: {
     clearResults: (state) => {
-      state.validationResult = null;
-      state.loading = false;
-      state.error = null;
+      state.validationResult = initialState.validationResult;
+      state.loading = initialState.loading;
+      state.error = initialState.error;
     },
   },
   extraReducers: (builder) => {

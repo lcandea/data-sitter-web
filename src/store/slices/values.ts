@@ -37,7 +37,7 @@ const valuesSlice = createSlice({
       );
     },
     clearValues: (state) => {
-      state.values = [];
+      state.values = initialState.values;
     },
   },
 });

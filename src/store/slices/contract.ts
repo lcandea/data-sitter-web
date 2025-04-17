@@ -186,6 +186,14 @@ const contractSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    resetContractState: (state) => {
+      state.id = initialState.id;
+      state.name = initialState.name;
+      state.fields = initialState.fields;
+      state.userContracts = initialState.userContracts;
+      state.loading = initialState.loading;
+      state.error = initialState.error;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -230,7 +238,12 @@ const contractSlice = createSlice({
     createLoadingAndErrorMatch("contract/")(builder);
   },
 });
-export const { setName, setFields, setContract, clearError } =
-  contractSlice.actions;
+export const {
+  setName,
+  setFields,
+  setContract,
+  clearError,
+  resetContractState,
+} = contractSlice.actions;
 
 export default contractSlice.reducer;

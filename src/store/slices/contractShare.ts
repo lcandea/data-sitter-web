@@ -114,7 +114,14 @@ export const updateUserPermission = createAppAsyncThunk(
 const contractShareSlice = createSlice({
   name: "contractShare",
   initialState,
-  reducers: {},
+  reducers: {
+    resetContractShareState: (state) => {
+      state.link = initialState.link;
+      state.permissions = initialState.permissions;
+      state.loading = initialState.loading;
+      state.error = initialState.error;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchContractLink.fulfilled, (state, action) => {
