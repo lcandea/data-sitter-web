@@ -17,7 +17,7 @@ export function ValidatePage() {
         </Button>
         <h1 className="text-3xl font-bold">Validate Data</h1>
       </div>
-      <Validate contract={contract} />;
+      <Validate contract={contract} />
     </div>
   );
 }

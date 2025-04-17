@@ -13,9 +13,10 @@ import { CsvTab } from "./tabs/CsvTab";
 
 interface ValidateProps {
   contract: Contract;
+  pageSize?: number;
 }
 
-export function Validate({ contract }: ValidateProps) {
+export function Validate({ contract, pageSize = 50 }: ValidateProps) {
   const dispatch = useAppDispatch();
 
   const { validationResult, loading, error } = useAppSelector(
@@ -64,7 +65,7 @@ export function Validate({ contract }: ValidateProps) {
         </TabsContent>
 
         <TabsContent value="csv" className="mt-6">
-          <CsvTab ref={tabRefs.csv} />
+          <CsvTab ref={tabRefs.csv} pageSize={pageSize} />
         </TabsContent>
       </Tabs>
 
@@ -104,7 +105,7 @@ export function Validate({ contract }: ValidateProps) {
               : "bg-red-500/10 border-red-500/20"
           }`}
         >
-          <ValidationResult />
+          <ValidationResult pageSize={pageSize} />
         </div>
       )}
 

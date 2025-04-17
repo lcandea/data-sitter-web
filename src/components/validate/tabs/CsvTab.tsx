@@ -9,114 +9,120 @@ import { Pagination } from "@/components/ui/pagination";
 import { DataSitterValidator } from "data-sitter";
 import { formatContractForExport } from "@/lib/contract-utils";
 
-export const CsvTab = forwardRef<TabRef>((_, ref) => {
-  const dispatch = useAppDispatch();
-  const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
-  const [csvContent, setCsvContent] = useState<string>("");
+interface CsvTabProps {
+  pageSize?: number;
+}
 
-  const { currentData, currentPage, totalPages, setPage } = usePagination({
-    data: csvData,
-    pageSize: 50,
-  });
+export const CsvTab = forwardRef<TabRef, CsvTabProps>(
+  ({ pageSize = 50 }, ref) => {
+    const dispatch = useAppDispatch();
+    const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
+    const [csvContent, setCsvContent] = useState<string>("");
 
-  useImperativeHandle(ref, () => ({
-    async validate(contract: Contract) {
-      const validator = new DataSitterValidator(
-        formatContractForExport(contract)
-      );
-      dispatch(executeValidator(() => validator.validateCsv(csvContent)));
-    },
-    clear() {
-      setCsvData([]);
-      setCsvContent("");
-    },
-  }));
+    const { currentData, currentPage, totalPages, setPage } = usePagination({
+      data: csvData,
+      pageSize,
+    });
 
-  const handleCsvUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    useImperativeHandle(ref, () => ({
+      async validate(contract: Contract) {
+        const validator = new DataSitterValidator(
+          formatContractForExport(contract)
+        );
+        dispatch(executeValidator(() => validator.validateCsv(csvContent)));
+      },
+      clear() {
+        setCsvData([]);
+        setCsvContent("");
+      },
+    }));
 
-    const content = await file.text();
-    setCsvContent(content);
+    const handleCsvUpload = async (
+      event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    // Parse CSV to display in table
-    const lines = content.split("\n");
-    const headers = lines[0].split(",").map((h) => h.trim());
-    const rows = lines
-      .slice(1)
-      .filter((line) => line.trim())
-      .map((line) => {
-        const values = line.split(",").map((v) => v.trim());
-        return headers.reduce((obj, header, i) => {
-          obj[header] = values[i];
-          return obj;
-        }, {} as Record<string, string>);
-      });
+      const content = await file.text();
+      setCsvContent(content);
 
-    setCsvData(rows);
-  };
+      // Parse CSV to display in table
+      const lines = content.split("\n");
+      const headers = lines[0].split(",").map((h) => h.trim());
+      const rows = lines
+        .slice(1)
+        .filter((line) => line.trim())
+        .map((line) => {
+          const values = line.split(",").map((v) => v.trim());
+          return headers.reduce((obj, header, i) => {
+            obj[header] = values[i];
+            return obj;
+          }, {} as Record<string, string>);
+        });
 
-  return (
-    <>
-      {!csvContent ? (
-        <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
-          <Button variant="outline" asChild className="mb-4">
-            <label className="cursor-pointer">
-              <Upload className="h-4 w-4 mr-2" />
-              Select CSV File
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleCsvUpload}
-                className="hidden"
-              />
-            </label>
-          </Button>
-          <p className="text-sm text-muted-foreground">No CSV selected</p>
-        </div>
-      ) : (
-        <>
-          <div className="border rounded-lg overflow-hidden">
-            <div className="max-h-[600px] overflow-auto">
-              <table className="w-full">
-                <thead className="sticky top-0 z-10">
-                  <tr className="bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
-                    {Object.keys(csvData[0] || {}).map((header) => (
-                      <th
-                        key={header}
-                        className="px-4 py-2 text-left text-sm font-medium"
-                      >
-                        {header}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentData.map((row, i) => (
-                    <tr key={i}>
-                      {Object.values(row).map((value, j) => (
-                        <td key={j} className="px-4 py-2 text-sm">
-                          {value}
-                        </td>
+      setCsvData(rows);
+    };
+
+    return (
+      <>
+        {!csvContent ? (
+          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
+            <Button variant="outline" asChild className="mb-4">
+              <label className="cursor-pointer">
+                <Upload className="h-4 w-4 mr-2" />
+                Select CSV File
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleCsvUpload}
+                  className="hidden"
+                />
+              </label>
+            </Button>
+            <p className="text-sm text-muted-foreground">No CSV selected</p>
+          </div>
+        ) : (
+          <>
+            <div className="border rounded-lg overflow-hidden">
+              <div className="max-h-[600px] overflow-auto">
+                <table className="w-full">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="bg-muted/50 backdrop-blur supports-[backdrop-filter]:bg-muted/50">
+                      {Object.keys(csvData[0] || {}).map((header) => (
+                        <th
+                          key={header}
+                          className="px-4 py-2 text-left text-sm font-medium"
+                        >
+                          {header}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {currentData.map((row, i) => (
+                      <tr key={i}>
+                        {Object.values(row).map((value, j) => (
+                          <td key={j} className="px-4 py-2 text-sm">
+                            {value}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          <Pagination
-            className="pt-4"
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        </>
-      )}
-    </>
-  );
-});
+            <Pagination
+              className="pt-4"
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </>
+        )}
+      </>
+    );
+  }
+);
 
 CsvTab.displayName = "CsvTab";

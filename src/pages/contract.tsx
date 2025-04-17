@@ -11,12 +11,14 @@ import { useContract } from "@/hooks/useContract";
 import { useAppDispatch } from "@/hooks/useStore";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
+import { ValidateDialog } from "@/components/validate/ValidatorDialog";
 
 export function ContractPage() {
   const { id } = useParams();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [validateOpen, setValidateOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const {
     error,
@@ -61,18 +63,6 @@ export function ContractPage() {
     navigate(`/contract/${newId}`);
   };
 
-  const handleValidate = () => {
-    if (!id) {
-      toast({
-        title: "Error",
-        description: "Please save the contract first",
-        variant: "destructive",
-      });
-      return;
-    }
-    navigate(`/contract/${id}/validate`);
-  };
-
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
@@ -97,11 +87,7 @@ export function ContractPage() {
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>
-          <Button
-            variant="secondary"
-            onClick={handleValidate}
-            disabled={hasChanged}
-          >
+          <Button variant="secondary" onClick={() => setValidateOpen(true)}>
             <CheckCircle className="h-4 w-4 mr-2" />
             Validate Data
           </Button>
@@ -122,6 +108,12 @@ export function ContractPage() {
           navigate("/");
         }}
         message={error!}
+      />
+
+      <ValidateDialog
+        open={validateOpen}
+        onOpenChange={setValidateOpen}
+        contract={contract}
       />
     </div>
   );
