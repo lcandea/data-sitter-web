@@ -238,7 +238,7 @@ export function ValuesDictionary() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Values Dictionary</Button>
+        <Button className="w-full md:w-auto">Values Dictionary</Button>
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
