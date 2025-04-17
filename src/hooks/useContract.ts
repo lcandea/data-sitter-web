@@ -116,22 +116,6 @@ export const useContract = () => {
     }
   };
 
-  const validateData = async (data: DataInput) => {
-    if (!contract) throw new Error("Contract not loaded.");
-    const validator = new DataSitterValidator(
-      formatContractForExport(contract)
-    );
-    return await validator.validateData(data);
-  };
-
-  const validateCsv = async (csvContent: string) => {
-    if (!contract) throw new Error("Contract not loaded.");
-    const validator = new DataSitterValidator(
-      formatContractForExport(contract)
-    );
-    return await validator.validateCsv(csvContent);
-  };
-
   return {
     contract,
     storedContract,
@@ -145,7 +129,5 @@ export const useContract = () => {
     importContract,
     saveLocalChanges,
     persistContract,
-    validateData,
-    validateCsv,
   };
 };

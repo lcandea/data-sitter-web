@@ -4,7 +4,7 @@ export type NavItem = {
 };
 
 export interface TabRef {
-  validate: () => void;
+  validate: (contract: Contract) => void;
   clear: () => void;
 }
 

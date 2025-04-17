@@ -3,14 +3,13 @@ import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/hooks/useStore";
 import { executeValidator } from "@/store/slices/validation";
-import { useContract } from "@/hooks/useContract";
-import { TabRef } from "@/lib/types";
+import { Contract, TabRef } from "@/lib/types";
 import { usePagination } from "@/hooks/usePagination";
 import { Pagination } from "@/components/ui/pagination";
+import { DataSitterValidator } from "data-sitter";
+import { formatContractForExport } from "@/lib/contract-utils";
 
 export const CsvTab = forwardRef<TabRef>((_, ref) => {
-  const { validateCsv } = useContract();
-
   const dispatch = useAppDispatch();
   const [csvData, setCsvData] = useState<Record<string, string>[]>([]);
   const [csvContent, setCsvContent] = useState<string>("");
@@ -21,8 +20,11 @@ export const CsvTab = forwardRef<TabRef>((_, ref) => {
   });
 
   useImperativeHandle(ref, () => ({
-    async validate() {
-      dispatch(executeValidator(() => validateCsv(csvContent)));
+    async validate(contract: Contract) {
+      const validator = new DataSitterValidator(
+        formatContractForExport(contract)
+      );
+      dispatch(executeValidator(() => validator.validateCsv(csvContent)));
     },
     clear() {
       setCsvData([]);
