@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 *.tsbuildinfo
+bundle-report.html
 
 # Editor directories and files
 .vscode/*

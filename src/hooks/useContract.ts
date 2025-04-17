@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { isEqual } from "lodash";
-import { Contract, ContractField, ContractValue, DataInput } from "@/lib/types";
+import isEqual from "lodash/isEqual";
+import { Contract, ContractField, ContractValue } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "./useStore";
 
 import * as csActions from "../store/slices/contract";
 import * as vActions from "../store/slices/values";
-import { DataSitterValidator } from "data-sitter";
-import { formatContractForExport } from "@/lib/contract-utils";
 
 export const useContract = () => {
   const dispatch = useAppDispatch();

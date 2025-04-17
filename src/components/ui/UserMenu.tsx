@@ -16,11 +16,14 @@ import { LogIn, Menu, User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { LogInDialog } from "./logInDialog";
-import { useMemo, useState } from "react";
+import { lazy, useMemo, useState } from "react";
 import { Button } from "./button";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { logout } from "@/store/slices/auth";
+
+export const LogInDialog = lazy(() =>
+  import("./logInDialog").then((module) => ({ default: module.LogInDialog }))
+);
 
 export const UserMenu = () => {
   const dispatch = useAppDispatch();

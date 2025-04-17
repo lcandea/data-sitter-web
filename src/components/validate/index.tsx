@@ -2,12 +2,14 @@ import { useState, useRef } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FormTab, JsonTab, CsvTab } from "@/components/validate/tabs";
 import { ValidationResult } from "@/components/validate/ValidationResult";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { clearResults } from "@/store/slices/validation";
 import { Contract, TabRef } from "@/lib/types";
 import { ErrorDialog } from "../ui/ErrorDialog";
+import { FormTab } from "./tabs/FormTab";
+import { JsonTab } from "./tabs/JsonTab";
+import { CsvTab } from "./tabs/CsvTab";
 
 interface ValidateProps {
   contract: Contract;

@@ -1,13 +1,35 @@
+import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MainNav } from "@/components/MainNav";
-import { Landing } from "@/pages/Landing";
-import { ContractPage } from "@/pages/contract";
-import { ValidatePage } from "@/pages/validate";
 import { Footer } from "@/components/Footer";
-import { ContractsPage } from "./pages/contracts";
-import { LoadingOverlay } from "./components/LoadingOverlay";
+import { LoadingOverlay, SuspenseFallback } from "./components/LoadingOverlay";
 import { Toaster } from "./components/ui/toaster";
-import { PublicContractPage } from "./pages/PublicContract";
+
+const Landing = lazy(() =>
+  import("@/pages/Landing").then((module) => ({
+    default: module.Landing,
+  }))
+);
+const ContractPage = lazy(() =>
+  import("@/pages/contract").then((module) => ({
+    default: module.ContractPage,
+  }))
+);
+const ValidatePage = lazy(() =>
+  import("@/pages/validate").then((module) => ({
+    default: module.ValidatePage,
+  }))
+);
+const ContractsPage = lazy(() =>
+  import("./pages/contracts").then((module) => ({
+    default: module.ContractsPage,
+  }))
+);
+const PublicContractPage = lazy(() =>
+  import("./pages/PublicContract").then((module) => ({
+    default: module.PublicContractPage,
+  }))
+);
 
 function App() {
   return (
@@ -17,22 +39,27 @@ function App() {
 
       <main className="flex-1 flex flex-col bg-background">
         <div className="flex-1">
-          <Routes>
-            <Route path="/" element={<Landing />} />
+          <Suspense fallback={<SuspenseFallback />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
 
-            <Route path="contract">
-              <Route index element={<ContractPage />} />
-              <Route path=":id" element={<ContractPage />} />
-              <Route path=":id/validate" element={<ValidatePage />} />
-            </Route>
+              <Route path="contract">
+                <Route index element={<ContractPage />} />
+                <Route path=":id" element={<ContractPage />} />
+                <Route path=":id/validate" element={<ValidatePage />} />
+              </Route>
 
-            <Route path="shared">
-              <Route path=":publicToken" element={<PublicContractPage />} />
-              <Route path=":publicToken/validate" element={<ValidatePage />} />
-            </Route>
+              <Route path="shared">
+                <Route path=":publicToken" element={<PublicContractPage />} />
+                <Route
+                  path=":publicToken/validate"
+                  element={<ValidatePage />}
+                />
+              </Route>
 
-            <Route path="contracts" element={<ContractsPage />} />
-          </Routes>
+              <Route path="contracts" element={<ContractsPage />} />
+            </Routes>
+          </Suspense>
         </div>
       </main>
 

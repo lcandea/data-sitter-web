@@ -1,4 +1,6 @@
-import { useAppSelector } from "@/hooks/useStore";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { hideLoading, showLoading } from "@/store/slices/loading";
 import { Loader2 } from "lucide-react";
 
 export function LoadingOverlay() {
@@ -19,3 +21,17 @@ export function LoadingOverlay() {
     </div>
   );
 }
+
+export const SuspenseFallback = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(showLoading());
+
+    return () => {
+      dispatch(hideLoading());
+    };
+  }, [dispatch]);
+
+  return null;
+};

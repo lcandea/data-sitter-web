@@ -5,7 +5,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Auth } from "@supabase/auth-ui-react";
-import { supabase } from "@/services/supabase/supabase"; // esto ya lo tendrás tú exportao de forma limpia
+import { supabase } from "@/services/supabase/supabase";
 import { useEffect } from "react";
 
 interface LogInDialogProps {

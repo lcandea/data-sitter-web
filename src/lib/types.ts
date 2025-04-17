@@ -68,7 +68,7 @@ export interface DSContract {
     field_type: string;
     field_rules: string[];
   }[];
-  values: Record<string, unknown>;
+  values: Record<string, any>;
 }
 
 export interface EditorProps {

@@ -14,12 +14,12 @@ interface FormTabProps {
 
 export const FormTab = forwardRef<TabRef, FormTabProps>(({ contract }, ref) => {
   const dispatch = useAppDispatch();
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const [nullFields, setNullFields] = useState<Record<string, boolean>>({});
 
   useImperativeHandle(ref, () => ({
     async validate(contract: Contract) {
-      const data: Record<string, unknown> = Object.fromEntries(
+      const data: Record<string, any> = Object.fromEntries(
         Object.entries(formData).map(([key, value]) => [
           key,
           nullFields[key] ? null : value,
