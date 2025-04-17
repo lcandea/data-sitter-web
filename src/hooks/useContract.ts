@@ -109,8 +109,8 @@ export const useContract = () => {
       await dispatch(csActions.updateContract(id));
       return id;
     } else {
-      const resultAction = await dispatch(csActions.createContract());
-      if (csActions.createContract.fulfilled.match(resultAction)) {
+      const resultAction = await dispatch(csActions.saveContractLocally());
+      if (csActions.saveContractLocally.fulfilled.match(resultAction)) {
         return resultAction.payload;
       }
     }

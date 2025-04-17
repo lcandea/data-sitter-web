@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Share2, Trash2 } from "lucide-react";
+import { Share2, Trash2, UploadCloud } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,7 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { deleteContract, fetchUserContracts } from "@/store/slices/contract";
+import {
+  deleteContract,
+  fetchUserContracts,
+  syncLocalContractToCloud,
+} from "@/store/slices/contract";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ShareContractDialog } from "@/components/share-contract";
 import { ContractPermissionRole } from "@/lib/database-types";
@@ -34,6 +38,7 @@ const roleDisplayMap: Record<
 export function ContractsPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { user } = useAppSelector((state) => state.auth);
   const { userContracts, loading, error } = useAppSelector(
     (state) => state.contract
   );
@@ -54,6 +59,13 @@ export function ContractsPage() {
       dispatch(hideLoading());
     }
   }, [dispatch, loading]);
+
+  const handleUpload = async (contractId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const reuslt = await dispatch(syncLocalContractToCloud(contractId));
+    if (reuslt.meta.requestStatus === "rejected") return;
+    dispatch(fetchUserContracts());
+  };
 
   const handleShare = (contractId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -109,7 +121,7 @@ export function ContractsPage() {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center justify-center gap-2 h-9">
-                    {["local", "local"].includes(contract.role) && (
+                    {["local", "owner"].includes(contract.role) && (
                       <>
                         {contract.role === "owner" && (
                           <Button
@@ -117,16 +129,26 @@ export function ContractsPage() {
                             size="icon"
                             onClick={(e) => handleShare(contract.id, e)}
                           >
-                            <Share2 className="h-4 w-4" />
+                            <Share2 className="h-5 w-5" />
                           </Button>
                         )}
+                        {contract.role === "local" && user && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => handleUpload(contract.id, e)}
+                          >
+                            <UploadCloud className="h-5 w-5" />
+                          </Button>
+                        )}
+
                         <Button
                           variant="ghost"
                           size="icon"
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={(e) => handleDelete(contract.id, e)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5" />
                         </Button>
                       </>
                     )}

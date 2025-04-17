@@ -61,7 +61,7 @@ export const UserMenu = () => {
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
               {user ? (
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={userInfo.avatar} alt={userInfo.fallback} />
+                  <AvatarImage src={userInfo.avatar} alt={userInfo.name} />
                   <AvatarFallback>{userInfo.fallback}</AvatarFallback>
                 </Avatar>
               ) : (
@@ -118,10 +118,7 @@ export const UserMenu = () => {
                 <Avatar>
                   {user ? (
                     <>
-                      <AvatarImage
-                        src={userInfo.avatar}
-                        alt={userInfo.fallback}
-                      />
+                      <AvatarImage src={userInfo.avatar} alt={userInfo.name} />
                       <AvatarFallback>{userInfo.fallback}</AvatarFallback>
                     </>
                   ) : (

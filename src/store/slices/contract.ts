@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Contract, ContractField } from "@/lib/types";
-import { createAppAsyncThunk } from "..";
+import { createAppAsyncThunk, GetState } from "..";
 import {
   contractFromImportData,
   formatContractForExport,
@@ -30,11 +30,12 @@ const initialState: ContractState = {
 
 export const fetchUserContracts = createAppAsyncThunk(
   "contract/fetchUserContracts",
-  async () => {
-    // const remoteContracts = await db.fetchUserContracts();
+  async (_, { getState }) => {
     const localContracts = await ls.fetchUserContracts();
-    // return remoteContracts.concat(localContracts);
-    return localContracts;
+    const { user } = getState().auth;
+    if (!user) return localContracts;
+    const remoteContracts = await db.fetchUserContracts();
+    return remoteContracts.concat(localContracts);
   }
 );
 
@@ -72,7 +73,6 @@ export const fetchPublicContract = createAppAsyncThunk(
         "The public token does not exists or it has been dissabled."
       );
     }
-    return null;
   }
 );
 
@@ -95,20 +95,46 @@ export const importContract = createAppAsyncThunk(
   }
 );
 
-export const createContract = createAppAsyncThunk(
-  "contract/createContract",
+const buildNewContract = (getState: GetState) => {
+  const { name, fields } = getState().contract;
+  if (!name) throw Error("Contract name cannot be empty or null.");
+  const { values } = getState().values;
+  return formatContractForExport({
+    id: null,
+    name,
+    fields,
+    values,
+  });
+};
+
+export const saveContractToCloud = createAppAsyncThunk(
+  "contract/saveContractToCloud",
   async (_, { getState }) => {
-    const { name, fields } = getState().contract;
-    if (!name) throw Error("Contract name cannot be empty or null.");
-    const { values } = getState().values;
-    const newContract = formatContractForExport({
-      id: null,
-      name,
-      fields,
-      values,
-    });
-    const id = ls.createContract(newContract);
+    const newContract = buildNewContract(getState);
+    const id = await db.createContract(newContract);
     return id;
+  }
+);
+
+export const saveContractLocally = createAppAsyncThunk(
+  "contract/saveContractLocally",
+  async (_, { getState }) => {
+    const newContract = buildNewContract(getState);
+    const id = await ls.createContract(newContract);
+    return id;
+  }
+);
+
+export const syncLocalContractToCloud = createAppAsyncThunk(
+  "contract/syncLocalContractToCloud",
+  async (contractId: string) => {
+    if (!contractId.startsWith("local-"))
+      throw new Error("The contract you are trying to sync is not local");
+    const contract = await ls.fetchContract(contractId);
+    if (!contract) throw new Error("Local contract not found...");
+    const id = await db.createContract(contract);
+    await ls.deleteContract(contractId);
+    return { oldId: contractId, newId: id };
   }
 );
 
@@ -182,9 +208,11 @@ const contractSlice = createSlice({
           state.fields = fields;
         }
       })
-      .addCase(createContract.fulfilled, (state, action) => {
-        const id = action.payload;
-        state.id = id;
+      .addCase(saveContractToCloud.fulfilled, (state, action) => {
+        state.id = action.payload;
+      })
+      .addCase(saveContractLocally.fulfilled, (state, action) => {
+        state.id = action.payload;
       })
       .addCase(importContract.fulfilled, (state, action) => {
         const { name, fields } = action.payload;
