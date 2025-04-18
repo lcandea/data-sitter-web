@@ -18,7 +18,6 @@ export function ContractPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-
   const {
     error,
     loading,
@@ -115,17 +114,18 @@ export function ContractPage() {
         <div className="flex items-center gap-2">
           {id ? (
             <>
-              {id.startsWith("local-") ? (
-                <Button variant="outline" onClick={handleUpload}>
-                  <UploadCloud className="h-4 w-4 mr-2" />
-                  Upload
-                </Button>
-              ) : (
-                <Button variant="outline" onClick={handleShare}>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share
-                </Button>
-              )}
+              {user &&
+                (id.startsWith("local-") ? (
+                  <Button variant="outline" onClick={handleUpload}>
+                    <UploadCloud className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={handleShare}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                ))}
               <Button
                 variant="outline"
                 onClick={handleUpdate}
@@ -138,20 +138,12 @@ export function ContractPage() {
           ) : (
             <>
               {user && (
-                <Button
-                  variant="outline"
-                  onClick={handleSaveToCloud}
-                  disabled={!hasChanged}
-                >
+                <Button variant="outline" onClick={handleSaveToCloud}>
                   <UploadCloud className="h-4 w-4 mr-2" />
                   Save to Cloud
                 </Button>
               )}
-              <Button
-                variant="outline"
-                onClick={handleSaveLocally}
-                disabled={!hasChanged}
-              >
+              <Button variant="outline" onClick={handleSaveLocally}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Locally
               </Button>

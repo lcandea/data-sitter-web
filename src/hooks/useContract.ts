@@ -100,7 +100,6 @@ export const useContract = () => {
   };
 
   const saveContractLocally = async () => {
-    if (!hasChanged) return;
     await saveContractToStore();
     const resultAction = await dispatch(csActions.saveContractLocally());
     if (csActions.saveContractLocally.fulfilled.match(resultAction)) {
@@ -109,7 +108,6 @@ export const useContract = () => {
   };
 
   const saveContractToCloud = async () => {
-    if (!hasChanged) return;
     await saveContractToStore();
     const resultAction = await dispatch(csActions.saveContractToCloud());
     if (csActions.saveContractToCloud.fulfilled.match(resultAction)) {
