@@ -26,13 +26,16 @@ import { ErrorDialog } from "@/components/ui/ErrorDialog";
 // Role display mapping
 const roleDisplayMap: Record<
   ContractPermissionRole,
-  { label: string; variant: "default" | "secondary" | "outline" }
+  {
+    label: string;
+    variant: "default" | "secondary" | "outline" | "accent";
+  }
 > = {
   owner: { label: "Owner", variant: "default" },
   writer: { label: "Writer", variant: "secondary" },
   validator: { label: "Validator", variant: "outline" },
   reader: { label: "Reader", variant: "outline" },
-  local: { label: "Local", variant: "default" },
+  local: { label: "Local", variant: "accent" },
 };
 
 export function ContractsPage() {
@@ -160,14 +163,12 @@ export function ContractsPage() {
         </Table>
       </div>
 
-      {/* Share Dialog */}
       <ShareContractDialog
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
         contractId={selectedContractId!}
       />
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}

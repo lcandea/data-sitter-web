@@ -13,13 +13,13 @@ document.documentElement.classList.add("dark");
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-      <AuthListener />
       <BrowserRouter
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true,
         }}
       >
+        <AuthListener />
         <App />
       </BrowserRouter>
     </Provider>

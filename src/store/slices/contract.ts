@@ -132,9 +132,9 @@ export const syncLocalContractToCloud = createAppAsyncThunk(
       throw new Error("The contract you are trying to sync is not local");
     const contract = await ls.fetchContract(contractId);
     if (!contract) throw new Error("Local contract not found...");
-    const id = await db.createContract(contract);
+    const newId = await db.createContract(contract);
     await ls.deleteContract(contractId);
-    return { oldId: contractId, newId: id };
+    return { oldId: contractId, newId };
   }
 );
 

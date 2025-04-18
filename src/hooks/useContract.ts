@@ -58,8 +58,7 @@ export const useContract = () => {
   }, [storedName, storedFields, storedValues, name, values, fields]);
 
   const clearContract = useCallback(() => {
-    dispatch(csActions.setName(null));
-    dispatch(csActions.setFields([]));
+    dispatch(csActions.resetContractState());
     dispatch(vActions.setValues([]));
     setName("");
     setFields([]);
@@ -93,24 +92,44 @@ export const useContract = () => {
     dispatch(csActions.importContract({ content, fileType }));
   };
 
-  const saveLocalChanges = async () => {
+  const saveContractToStore = async () => {
     if (!hasChanged) return;
     if (!name || name === "") throw new Error("Name cannot be empty.");
     if (name != storedName) dispatch(csActions.setName(name));
     if (!isEqual(fields, storedFields)) dispatch(csActions.setFields(fields));
   };
 
-  const persistContract = async () => {
+  const saveContractLocally = async () => {
     if (!hasChanged) return;
-    await saveLocalChanges();
-    if (id) {
-      await dispatch(csActions.updateContract(id));
-      return id;
-    } else {
-      const resultAction = await dispatch(csActions.saveContractLocally());
-      if (csActions.saveContractLocally.fulfilled.match(resultAction)) {
-        return resultAction.payload;
-      }
+    await saveContractToStore();
+    const resultAction = await dispatch(csActions.saveContractLocally());
+    if (csActions.saveContractLocally.fulfilled.match(resultAction)) {
+      return resultAction.payload;
+    }
+  };
+
+  const saveContractToCloud = async () => {
+    if (!hasChanged) return;
+    await saveContractToStore();
+    const resultAction = await dispatch(csActions.saveContractToCloud());
+    if (csActions.saveContractToCloud.fulfilled.match(resultAction)) {
+      return resultAction.payload;
+    }
+  };
+
+  const updateContract = async (contractId: string) => {
+    if (!hasChanged) return;
+    await saveContractToStore();
+    await dispatch(csActions.updateContract(contractId));
+  };
+
+  const syncLocalContractToCloud = async (contractId: string) => {
+    await updateContract(contractId);
+    const resultAction = await dispatch(
+      csActions.syncLocalContractToCloud(contractId)
+    );
+    if (csActions.syncLocalContractToCloud.fulfilled.match(resultAction)) {
+      return resultAction.payload.newId;
     }
   };
 
@@ -125,7 +144,10 @@ export const useContract = () => {
     fetchContract,
     fetchPublicContract,
     importContract,
-    saveLocalChanges,
-    persistContract,
+    saveContractToStore,
+    saveContractLocally,
+    saveContractToCloud,
+    syncLocalContractToCloud,
+    updateContract,
   };
 };

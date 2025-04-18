@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, RefreshCw, Link2, XCircle } from "lucide-react";
+import { Copy, RefreshCw, Link2, XCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +12,7 @@ import {
   refreshLink,
   updateLinkIsActive,
 } from "@/store/slices/contractShare";
+import { useNavigate } from "react-router-dom";
 
 interface LinkSectionProps {
   contractId: string;
@@ -19,6 +20,7 @@ interface LinkSectionProps {
 
 export function LinkSection({ contractId }: LinkSectionProps) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { link: contractLink } = useAppSelector((state) => state.contractShare);
 
@@ -52,6 +54,10 @@ export function LinkSection({ contractId }: LinkSectionProps) {
         description: "The shareable link has been revoked.",
       });
     }
+  };
+
+  const onPreviewLink = () => {
+    navigate(`/shared/${contractLink?.token}`);
   };
 
   const toggleActive = async (isActive: boolean) => {
@@ -123,6 +129,10 @@ export function LinkSection({ contractId }: LinkSectionProps) {
           <Button variant="outline" size="sm" onClick={onRevokeLink}>
             <XCircle className="h-4 w-4 mr-2" />
             Revoke Link
+          </Button>
+          <Button variant="outline" size="sm" onClick={onPreviewLink}>
+            <Eye className="h-4 w-4 mr-2" />
+            Preview Link
           </Button>
         </div>
 

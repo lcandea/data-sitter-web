@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
-import { FileJson, CheckCircle, Save } from "lucide-react";
+import { Save, UploadCloud } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExportDialog } from "@/components/contract/ExportDialog";
-import { ImportDialog } from "@/components/contract/ImportDialog";
 import { useToast } from "@/hooks/useToast";
 import { ContractEditor } from "@/components/contract/ContractEditor";
 import { useContract } from "@/hooks/useContract";
-import { useAppDispatch } from "@/hooks/useStore";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
 import { clearError } from "@/store/slices/contract";
 
 export function PublicContractPage() {
   const { publicToken } = useParams();
+  const { user } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -27,8 +27,8 @@ export function PublicContractPage() {
     setContract,
     clearContract,
     fetchPublicContract,
-    importContract,
-    saveLocalChanges,
+    saveContractLocally,
+    saveContractToCloud,
   } = useContract();
 
   useEffect(() => {
@@ -47,24 +47,30 @@ export function PublicContractPage() {
     }
   }, [dispatch, loading]);
 
-  const handleSave = async () => {
+  const checkContract = () => {
     if (!contract.name) {
       toast({
         title: "Error",
         description: "Please enter a contract name",
         variant: "destructive",
       });
-      return;
+      return false;
     }
-    await saveLocalChanges();
-    toast({
-      title: "Local changes",
-      description: "Changes saved locally as it is from  public link",
-    });
+    return true;
   };
 
-  const handleValidate = () => {
-    navigate(`/shared/${publicToken}/validate`);
+  const handleSaveLocally = async () => {
+    if (checkContract()) {
+      const newId = await saveContractLocally();
+      navigate(`/contract/${newId}`);
+    }
+  };
+
+  const handleSaveToCloud = async () => {
+    if (checkContract()) {
+      const newId = await saveContractToCloud();
+      navigate(`/contract/${newId}`);
+    }
   };
 
   return (
@@ -82,22 +88,15 @@ export function PublicContractPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <ImportDialog importContract={importContract} />
-          <Button onClick={() => setExportOpen(true)} disabled={hasChanged}>
-            <FileJson className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button variant="outline" onClick={handleSave} disabled={!hasChanged}>
+          {user && (
+            <Button variant="outline" onClick={handleSaveToCloud}>
+              <UploadCloud className="h-4 w-4 mr-2" />
+              Copy to Cloud
+            </Button>
+          )}
+          <Button variant="outline" onClick={handleSaveLocally}>
             <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleValidate}
-            disabled={hasChanged}
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Validate Data
+            Copy Locally
           </Button>
         </div>
       </div>
