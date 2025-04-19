@@ -21,7 +21,7 @@ import { Button } from "./button";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { logout } from "@/store/slices/auth";
 
-export const LogInDialog = lazy(() =>
+const LogInDialog = lazy(() =>
   import("./logInDialog").then((module) => ({ default: module.LogInDialog }))
 );
 

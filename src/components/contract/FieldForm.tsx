@@ -24,7 +24,7 @@ import {
 import { ContractField, FieldType, ContractValue } from "@/lib/types";
 import { getAllRulesForField, getFieldDefinitions } from "@/lib/field-utils";
 import { RulesList } from "./RulesList";
-import { isValidPythonIdentifier } from "@/lib/utils";
+import { cn, isValidPythonIdentifier } from "@/lib/utils";
 import { FieldDefinition } from "data-sitter";
 
 type FieldFormProps = {
@@ -138,7 +138,7 @@ export function FieldForm({
             placeholder="Enter field name"
             value={field.name}
             onChange={(e) => handleFieldUpdate({ name: e.target.value })}
-            className={nameError ? "border-red-500" : ""}
+            className={cn("mt-1.5", nameError ? "border-red-500" : "")}
           />
           {nameError && (
             <p className="text-sm text-red-500 mt-1">{nameError}</p>

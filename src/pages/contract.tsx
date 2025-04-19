@@ -8,8 +8,9 @@ import { useContract } from "@/hooks/useContract";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
-import { Save, Share2, UploadCloud } from "lucide-react";
+import { ChevronLeftCircle, Save, Share2, UploadCloud } from "lucide-react";
 import { ShareContractDialog } from "@/components/share-contract";
+import { Validate } from "@/components/validate";
 
 export function ContractPage() {
   const { id } = useParams();
@@ -18,6 +19,8 @@ export function ContractPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [validateOpen, setValidateOpen] = useState(false);
+
   const {
     error,
     loading,
@@ -97,11 +100,30 @@ export function ContractPage() {
     }
   };
 
+  if (validateOpen) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Data Validation</h1>
+          <Button
+            className="w-full md:w-auto md:ml-auto"
+            variant="secondary"
+            onClick={() => setValidateOpen(false)}
+          >
+            <ChevronLeftCircle className="h-4 w-4 mr-2" />
+            Back to Editor
+          </Button>
+        </div>
+        <Validate contract={contract} />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">Create Contract</h1>
+          <h1 className="text-3xl font-bold">Contract</h1>
           {hasChanged && (
             <Badge
               variant="outline"
@@ -152,7 +174,11 @@ export function ContractPage() {
         </div>
       </div>
 
-      <ContractEditor contract={contract} onChange={setContract} />
+      <ContractEditor
+        contract={contract}
+        onChange={setContract}
+        openExternalValidator={setValidateOpen}
+      />
 
       {id && (
         <ShareContractDialog

@@ -1,21 +1,26 @@
 import { useEffect, useState } from "react";
-import { CheckCircle, FileJson, Plus } from "lucide-react";
+import { CheckCircle, ChevronLeftCircle, FileJson, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Contract, ContractField } from "@/lib/types";
 import { FieldForm } from "@/components/contract/FieldForm";
 import { ValuesDictionary } from "@/components/contract/ValuesDictionary";
-import { isValidPythonIdentifier } from "@/lib/utils";
-import { ValidateDialog } from "../validate/ValidatorDialog";
+import { cn, isValidPythonIdentifier } from "@/lib/utils";
 import { ExportDialog } from "./ExportDialog";
+import { Validate } from "../validate";
 
 interface ContractEditorProprs {
   contract: Contract;
   onChange: (newContract: Contract) => void;
+  openExternalValidator?: (open: boolean) => void;
 }
 
-export function ContractEditor({ contract, onChange }: ContractEditorProprs) {
+export function ContractEditor({
+  contract,
+  onChange,
+  openExternalValidator,
+}: ContractEditorProprs) {
   const [exportOpen, setExportOpen] = useState(false);
   const [validateOpen, setValidateOpen] = useState(false);
   const [name, setName] = useState("");
@@ -64,6 +69,32 @@ export function ContractEditor({ contract, onChange }: ContractEditorProprs) {
     });
   };
 
+  const handleOpenValidate = (open: boolean) => {
+    if (openExternalValidator) {
+      openExternalValidator(open);
+    } else {
+      setValidateOpen(open);
+    }
+  };
+
+  if (validateOpen) {
+    return (
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row justify-end gap-4 flex-1">
+          <Button
+            className="w-full md:w-auto md:ml-auto"
+            variant="secondary"
+            onClick={() => setValidateOpen(false)}
+          >
+            <ChevronLeftCircle className="h-4 w-4 mr-2" />
+            Back to Editor
+          </Button>
+        </div>
+        <Validate contract={contract} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:justify-between gap-4">
@@ -78,7 +109,7 @@ export function ContractEditor({ contract, onChange }: ContractEditorProprs) {
               placeholder="Enter contract name"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              className={nameError ? "border-red-500" : ""}
+              className={cn("mt-1.5", nameError ? "border-red-500" : "")}
             />
             {nameError && (
               <p className="text-sm text-red-500 mt-1">{nameError}</p>
@@ -100,7 +131,7 @@ export function ContractEditor({ contract, onChange }: ContractEditorProprs) {
           <Button
             className="w-full md:w-auto"
             variant="secondary"
-            onClick={() => setValidateOpen(true)}
+            onClick={() => handleOpenValidate(true)}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Validate Data
@@ -133,11 +164,6 @@ export function ContractEditor({ contract, onChange }: ContractEditorProprs) {
       <ExportDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
-        contract={contract}
-      />
-      <ValidateDialog
-        open={validateOpen}
-        onOpenChange={setValidateOpen}
         contract={contract}
       />
     </div>
