@@ -4,7 +4,7 @@ export type NavItem = {
 };
 
 export interface TabRef {
-  validate: () => void;
+  validate: (contract: Contract) => void;
   clear: () => void;
 }
 
@@ -60,6 +60,16 @@ export type Contract = {
   fields: ContractField[];
   values: ContractValue[];
 };
+
+export interface DSContract {
+  name: string;
+  fields: {
+    field_name: string;
+    field_type: string;
+    field_rules: string[];
+  }[];
+  values: Record<string, any>;
+}
 
 export interface EditorProps {
   value: string;

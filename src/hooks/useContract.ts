@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { isEqual } from "lodash";
-import { Contract, ContractField, ContractValue, DataInput } from "@/lib/types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import isEqual from "lodash/isEqual";
+import { Contract, ContractField, ContractValue } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "./useStore";
 
 import * as csActions from "../store/slices/contract";
-import * as vsActions from "../store/slices/values";
-import { DataSitterValidator } from "data-sitter";
-import {
-  contractFromImportData,
-  formatContractForExport,
-} from "@/lib/contract-utils";
+import * as vActions from "../store/slices/values";
+import { useLoading } from "./useLoading";
 
 export const useContract = () => {
   const dispatch = useAppDispatch();
@@ -21,9 +17,12 @@ export const useContract = () => {
   const { values: storedValues } = useAppSelector((state) => state.values);
   const {
     id,
+    error,
+    loading,
     name: storedName,
     fields: storedFields,
   } = useAppSelector((state) => state.contract);
+  useLoading(loading);
 
   useEffect(() => {
     if (storedName) {
@@ -60,67 +59,101 @@ export const useContract = () => {
     );
   }, [storedName, storedFields, storedValues, name, values, fields]);
 
-  const setContract = (newContract: Contract) => {
+  const clearContract = useCallback(() => {
+    dispatch(csActions.resetContractState());
+    dispatch(vActions.setValues([]));
+    setName("");
+    setFields([]);
+    setValues([]);
+  }, [dispatch]);
+
+  const setContract = useCallback((newContract: Contract) => {
     setName(newContract.name);
     setFields(newContract.fields);
-  };
+  }, []);
+
+  const fetchContract = useCallback(
+    (id: string) => {
+      if (id) {
+        dispatch(csActions.fetchContract(id));
+      }
+    },
+    [dispatch]
+  );
+
+  const fetchPublicContract = useCallback(
+    (token: string) => {
+      if (token) {
+        dispatch(csActions.fetchPublicContract(token));
+      }
+    },
+    [dispatch]
+  );
 
   const importContract = async (content: string, fileType: "YAML" | "JSON") => {
-    let validator;
-    if (fileType === "JSON") {
-      validator = await DataSitterValidator.fromJson(content);
-    } else {
-      validator = await DataSitterValidator.fromYaml(content);
+    const resultAction = await dispatch(
+      csActions.importContract({ content, fileType })
+    );
+    if (csActions.importContract.fulfilled.match(resultAction)) {
+      return resultAction.payload;
     }
-    const importedContract = await validator.getRepresentation();
-    const contract = contractFromImportData(importedContract);
-
-    setName(contract.name);
-    setFields(contract.fields);
-    dispatch(vsActions.setValues(contract.values));
+    return null;
   };
 
-  const persistContract = async () => {
+  const saveContractToStore = async () => {
     if (!hasChanged) return;
     if (!name || name === "") throw new Error("Name cannot be empty.");
     if (name != storedName) dispatch(csActions.setName(name));
     if (!isEqual(fields, storedFields)) dispatch(csActions.setFields(fields));
-    if (id) {
-      await dispatch(csActions.updateConctract(id));
-      return id;
-    } else {
-      await dispatch(csActions.createConctract());
-      const resultAction = await dispatch(csActions.createConctract());
-      if (csActions.createConctract.fulfilled.match(resultAction)) {
-        return resultAction.payload;
-      }
+  };
+
+  const saveContractLocally = async () => {
+    await saveContractToStore();
+    const resultAction = await dispatch(csActions.saveContractLocally());
+    if (csActions.saveContractLocally.fulfilled.match(resultAction)) {
+      return resultAction.payload;
     }
   };
 
-  const validateData = async (data: DataInput) => {
-    if (!contract) throw new Error("Contract not loaded.");
-    const validator = new DataSitterValidator(
-      formatContractForExport(contract)
-    );
-    return await validator.validateData(data);
+  const saveContractToCloud = async () => {
+    await saveContractToStore();
+    const resultAction = await dispatch(csActions.saveContractToCloud());
+    if (csActions.saveContractToCloud.fulfilled.match(resultAction)) {
+      return resultAction.payload;
+    }
   };
 
-  const validateCsv = async (csvContent: string) => {
-    if (!contract) throw new Error("Contract not loaded.");
-    const validator = new DataSitterValidator(
-      formatContractForExport(contract)
+  const updateContract = async (contractId: string) => {
+    if (!hasChanged) return;
+    await saveContractToStore();
+    await dispatch(csActions.updateContract(contractId));
+  };
+
+  const syncLocalContractToCloud = async (contractId: string) => {
+    await updateContract(contractId);
+    const resultAction = await dispatch(
+      csActions.syncLocalContractToCloud(contractId)
     );
-    return await validator.validateCsv(csvContent);
+    if (csActions.syncLocalContractToCloud.fulfilled.match(resultAction)) {
+      return resultAction.payload.newId;
+    }
   };
 
   return {
     contract,
     storedContract,
     hasChanged,
+    error,
+    loading,
     setContract,
+    clearContract,
+    fetchContract,
+    fetchPublicContract,
     importContract,
-    persistContract,
-    validateData,
-    validateCsv,
+    saveContractToStore,
+    saveContractLocally,
+    saveContractToCloud,
+    syncLocalContractToCloud,
+    updateContract,
   };
 };

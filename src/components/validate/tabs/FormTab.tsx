@@ -3,25 +3,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAppDispatch } from "@/hooks/useStore";
-import { useContract } from "@/hooks/useContract";
 import { executeValidator } from "@/store/slices/validation";
-import { TabRef } from "@/lib/types";
+import { Contract, TabRef } from "@/lib/types";
+import { DataSitterValidator } from "data-sitter";
+import { formatContractForExport } from "@/lib/contract-utils";
 
-export const FormTab = forwardRef<TabRef>((_, ref) => {
+interface FormTabProps {
+  contract: Contract;
+}
+
+export const FormTab = forwardRef<TabRef, FormTabProps>(({ contract }, ref) => {
   const dispatch = useAppDispatch();
-  const { contract, validateData } = useContract();
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [nullFields, setNullFields] = useState<Record<string, boolean>>({});
 
   useImperativeHandle(ref, () => ({
-    async validate() {
+    async validate(contract: Contract) {
       const data: Record<string, any> = Object.fromEntries(
         Object.entries(formData).map(([key, value]) => [
           key,
           nullFields[key] ? null : value,
         ])
       );
-      dispatch(executeValidator(() => validateData(data)));
+      const validator = new DataSitterValidator(
+        formatContractForExport(contract)
+      );
+
+      dispatch(executeValidator(() => validator.validateData(data)));
     },
     clear() {
       setFormData({});

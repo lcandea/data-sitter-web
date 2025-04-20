@@ -11,7 +11,11 @@ import { useAppSelector } from "@/hooks/useStore";
 import { usePagination } from "@/hooks/usePagination";
 import { useState } from "react";
 
-export function ValidationResult() {
+interface ValidationResultProps {
+  pageSize?: number;
+}
+
+export function ValidationResult({ pageSize = 50 }: ValidationResultProps) {
   const [onlyErrors, setOnlyErrors] = useState(true);
 
   const { validationResult, error } = useAppSelector(
@@ -21,7 +25,7 @@ export function ValidationResult() {
     data: onlyErrors
       ? (validationResult || []).filter((item) => item.errors)
       : validationResult || [],
-    pageSize: 50,
+    pageSize,
   });
 
   if (error || !validationResult) {

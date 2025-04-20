@@ -2,18 +2,22 @@ import { useState, forwardRef, useImperativeHandle } from "react";
 import { Editor } from "@/components/validate/Editor";
 import { useAppDispatch } from "@/hooks/useStore";
 import { executeValidator } from "@/store/slices/validation";
-import { useContract } from "@/hooks/useContract";
-import { TabRef } from "@/lib/types";
+import { Contract, TabRef } from "@/lib/types";
+import { DataSitterValidator } from "data-sitter";
+import { formatContractForExport } from "@/lib/contract-utils";
 
 export const JsonTab = forwardRef<TabRef>((_, ref) => {
   const dispatch = useAppDispatch();
-  const { validateData } = useContract();
 
   const [jsonContent, setJsonContent] = useState("");
 
   useImperativeHandle(ref, () => ({
-    async validate() {
-      dispatch(executeValidator(() => validateData(jsonContent)));
+    async validate(contract: Contract) {
+      const validator = new DataSitterValidator(
+        formatContractForExport(contract)
+      );
+
+      dispatch(executeValidator(() => validator.validateData(jsonContent)));
     },
     clear() {
       setJsonContent("");

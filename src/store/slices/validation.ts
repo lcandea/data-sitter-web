@@ -1,17 +1,10 @@
-import {
-  createSlice,
-  isFulfilled,
-  isPending,
-  isRejected,
-  PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { createAppAsyncThunk } from "..";
 import { Validation } from "data-sitter";
+import { createLoadingAndErrorMatch, WithLoadingAndError } from "../helpers";
 
-interface ValidationState {
+interface ValidationState extends WithLoadingAndError {
   validationResult: Validation[] | null;
-  loading: boolean;
-  error: string | null;
 }
 
 const initialState: ValidationState = {
@@ -32,46 +25,16 @@ const validationSlice = createSlice({
   initialState,
   reducers: {
     clearResults: (state) => {
-      state.validationResult = null;
-      state.loading = false;
-      state.error = null;
+      state.validationResult = initialState.validationResult;
+      state.loading = initialState.loading;
+      state.error = initialState.error;
     },
   },
   extraReducers: (builder) => {
-    builder
-      .addCase(executeValidator.fulfilled, (state, action) => {
-        state.validationResult = action.payload;
-      })
-      .addMatcher(
-        (action): action is PayloadAction =>
-          isPending(action) && action.type.startsWith("validation/"),
-        (state) => {
-          state.validationResult = null;
-          state.loading = true;
-          state.error = null;
-        }
-      )
-      .addMatcher(
-        (action): action is PayloadAction =>
-          isFulfilled(action) && action.type.startsWith("validation/"),
-        (state) => {
-          state.loading = false;
-        }
-      )
-      .addMatcher(
-        (action): action is ReturnType<typeof isRejected> =>
-          isRejected(action) && action.type.startsWith("validation/"),
-        (state, action) => {
-          state.loading = false;
-          if ("error" in action) {
-            state.error =
-              (action.error as { message?: string }).message ||
-              "An error occurred in validation";
-          } else {
-            state.error = "An error occurred in validation";
-          }
-        }
-      );
+    builder.addCase(executeValidator.fulfilled, (state, action) => {
+      state.validationResult = action.payload;
+    });
+    createLoadingAndErrorMatch("validation/")(builder);
   },
 });
 

@@ -10,7 +10,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="../" className="flex items-center space-x-2">
               <DataSitterIcon className="h-8 w-8 text-primary" />
               <span className="font-bold text-lg">Data Sitter</span>
             </Link>

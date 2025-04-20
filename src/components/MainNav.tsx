@@ -1,15 +1,7 @@
 import DataSitterIcon from "./ui/DataSitterIcon";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { UserMenu } from "./ui/UserMenu";
 
 export function MainNav() {
   return (
@@ -28,27 +20,8 @@ export function MainNav() {
         </div>
 
         <div className="flex items-center gap-4 flex-1 justify-end">
-          {/* <Button variant="outline" className="hidden md:inline-flex">
-            Log In
-          </Button> */}
+          <UserMenu />
           <ThemeToggle />
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Navigation</SheetTitle>
-              </SheetHeader>
-              <div className="flex flex-col gap-4 mt-8">
-                <Button variant="outline" className="w-full">
-                  Log In
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
         </div>
       </div>
     </div>

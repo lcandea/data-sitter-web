@@ -1,8 +1,14 @@
 import { parseRuleTemplate } from "./rule-parser";
-import { Contract, ContractField, ContractValue, Rule } from "./types";
+import {
+  Contract,
+  ContractField,
+  ContractValue,
+  DSContract,
+  Rule,
+} from "./types";
 import { FieldRule, Field, ImportData } from "data-sitter";
 
-export function formatContractForExport(contract: Contract) {
+export function formatContractForExport(contract: Contract): DSContract {
   const formattedContract = {
     name: contract.name,
     fields: contract.fields.map((field) => ({

@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { ContractValue, ParameterType } from "@/lib/types";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { addValue, updateValue, removeValue } from "@/store/slices/values";
@@ -238,7 +238,7 @@ export function ValuesDictionary() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Values Dictionary</Button>
+        <Button className="w-full md:w-auto">Values Dictionary</Button>
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>

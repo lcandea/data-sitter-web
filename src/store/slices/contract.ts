@@ -1,67 +1,174 @@
-import {
-  createSlice,
-  isFulfilled,
-  isPending,
-  isRejected,
-  PayloadAction,
-} from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Contract, ContractField } from "@/lib/types";
-import { createAppAsyncThunk } from "..";
+import { createAppAsyncThunk, GetState } from "..";
+import {
+  contractFromImportData,
+  formatContractForExport,
+} from "@/lib/contract-utils";
+import * as db from "@/services/supabase/contracts";
+import * as ls from "@/services/local-store";
+import { DataSitterValidator } from "data-sitter";
+import { setValues } from "./values";
+import { ContractPreview } from "@/lib/database-types";
+import { createLoadingAndErrorMatch, WithLoadingAndError } from "../helpers";
 
-interface ContractState {
+interface ContractState extends WithLoadingAndError {
   id: string | null;
   name: string | null;
   fields: ContractField[];
-  loading: boolean;
-  error: string | null;
+  userContracts: ContractPreview[];
 }
 
 const initialState: ContractState = {
   id: null,
   name: null,
   fields: [],
+  userContracts: [],
   loading: false,
   error: null,
 };
 
-const generateId = () => {
-  return Math.random().toString(36).substring(2, 10);
-};
+export const fetchUserContracts = createAppAsyncThunk(
+  "contract/fetchUserContracts",
+  async (_, { getState }) => {
+    const localContracts = await ls.fetchUserContracts();
+    const { user } = getState().auth;
+    if (!user) return localContracts;
+    const remoteContracts = await db.fetchUserContracts();
+    return remoteContracts.concat(localContracts);
+  }
+);
 
-export const fetchConctract = createAppAsyncThunk(
-  "contract/fetchConctract",
-  async (id: string) => {
-    console.log("contract/fetchConctract id:", id);
-    await new Promise((resolve) => setTimeout(resolve, 300));
+export const fetchContract = createAppAsyncThunk(
+  "contract/fetchContract",
+  async (id: string, { dispatch }) => {
+    const source = id.startsWith("local-") ? ls : db;
+    const contract = await source.fetchContract(id);
 
+    if (contract) {
+      const validator = new DataSitterValidator(contract);
+      const { name, fields, values } = contractFromImportData(
+        await validator.getRepresentation()
+      );
+      dispatch(setValues(values));
+      return { id, name, fields };
+    }
     return null;
   }
 );
 
-export const createConctract = createAppAsyncThunk(
-  "contract/createConctract",
-  async (_, { getState }) => {
-    const { name, fields } = getState().contract;
-    if (!name) throw Error("Contract name cannot be empty or null.");
-    const { values } = getState().values;
-    const updatedContract: Contract = { id: null, name, fields, values };
-    console.log("contract/createConctract id:", updatedContract);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return generateId();
+export const fetchPublicContract = createAppAsyncThunk(
+  "contract/fetchPublicContract",
+  async (publicToken: string, { dispatch }) => {
+    const contract = await db.fetchPublicContract(publicToken);
+    if (contract) {
+      const validator = new DataSitterValidator(contract);
+      const { name, fields, values } = contractFromImportData(
+        await validator.getRepresentation()
+      );
+      dispatch(setValues(values));
+      return { name, fields };
+    } else {
+      throw new Error(
+        "The public token does not exists or it has been dissabled."
+      );
+    }
   }
 );
 
-export const updateConctract = createAppAsyncThunk(
-  "contract/updateConctract",
-  async (id: string, { getState }) => {
+export const importContract = createAppAsyncThunk(
+  "contract/importContract",
+  async (
+    { content, fileType }: { content: string; fileType: "YAML" | "JSON" },
+    { dispatch }
+  ) => {
+    let validator;
+    if (fileType === "JSON") {
+      validator = await DataSitterValidator.fromJson(content);
+    } else {
+      validator = await DataSitterValidator.fromYaml(content);
+    }
+    const importedContract = await validator.getRepresentation();
+    const contract = contractFromImportData(importedContract);
+    dispatch(setName(contract.name));
+    dispatch(setFields(contract.fields));
+    dispatch(setValues(contract.values));
+    const resultAction = await dispatch(saveContractLocally());
+    if (saveContractLocally.fulfilled.match(resultAction)) {
+      return resultAction.payload;
+    }
+  }
+);
+
+const buildNewContract = (getState: GetState) => {
+  const { name, fields } = getState().contract;
+  if (!name) throw Error("Contract name cannot be empty or null.");
+  const { values } = getState().values;
+  return formatContractForExport({
+    id: null,
+    name,
+    fields,
+    values,
+  });
+};
+
+export const saveContractToCloud = createAppAsyncThunk(
+  "contract/saveContractToCloud",
+  async (_, { getState }) => {
+    const newContract = buildNewContract(getState);
+    const id = await db.createContract(newContract);
+    return id;
+  }
+);
+
+export const saveContractLocally = createAppAsyncThunk(
+  "contract/saveContractLocally",
+  async (_, { getState }) => {
+    const newContract = buildNewContract(getState);
+    const id = await ls.createContract(newContract);
+    return id;
+  }
+);
+
+export const syncLocalContractToCloud = createAppAsyncThunk(
+  "contract/syncLocalContractToCloud",
+  async (contractId: string) => {
+    if (!contractId.startsWith("local-"))
+      throw new Error("The contract you are trying to sync is not local");
+    const contract = await ls.fetchContract(contractId);
+    if (!contract) throw new Error("Local contract not found...");
+    const newId = await db.createContract(contract);
+    await ls.deleteContract(contractId);
+    return { oldId: contractId, newId };
+  }
+);
+
+export const updateContract = createAppAsyncThunk(
+  "contract/updateContract",
+  async (contractId: string, { getState }) => {
     const { id: storedId, name, fields } = getState().contract;
-    if (id != storedId) throw Error("IDs does not match when trying to update");
+    if (contractId != storedId)
+      throw Error("IDs does not match when trying to update");
     if (!name) throw Error("Contract name cannot be empty or null.");
     const { values } = getState().values;
-    const updatedContract: Contract = { id, name, fields, values };
-    console.log("contract/updateConctract id:", id, updatedContract);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return 204;
+    const updatedContract = formatContractForExport({
+      id: null,
+      name,
+      fields,
+      values,
+    });
+    const source = contractId.startsWith("local-") ? ls : db;
+    await source.updateContract(contractId, updatedContract);
+  }
+);
+
+export const deleteContract = createAppAsyncThunk(
+  "contract/deleteContract",
+  async (contractId: string) => {
+    const source = contractId.startsWith("local-") ? ls : db;
+    const deleted = await source.deleteContract(contractId);
+    if (deleted) return contractId;
+    return null;
   }
 );
 
@@ -69,7 +176,7 @@ const contractSlice = createSlice({
   name: "contract",
   initialState,
   reducers: {
-    setName: (state, action: PayloadAction<string>) => {
+    setName: (state, action: PayloadAction<string | null>) => {
       state.name = action.payload;
     },
     setFields: (state, action: PayloadAction<ContractField[]>) => {
@@ -81,10 +188,24 @@ const contractSlice = createSlice({
       state.name = name || null;
       state.fields = fields;
     },
+    clearError: (state) => {
+      state.error = null;
+    },
+    resetContractState: (state) => {
+      state.id = initialState.id;
+      state.name = initialState.name;
+      state.fields = initialState.fields;
+      state.userContracts = initialState.userContracts;
+      state.loading = initialState.loading;
+      state.error = initialState.error;
+    },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchConctract.fulfilled, (state, action) => {
+      .addCase(fetchUserContracts.fulfilled, (state, action) => {
+        state.userContracts = action.payload;
+      })
+      .addCase(fetchContract.fulfilled, (state, action) => {
         if (action.payload) {
           const { id, name, fields } = action.payload;
           state.id = id || null;
@@ -92,47 +213,37 @@ const contractSlice = createSlice({
           state.fields = fields;
         }
       })
-      .addCase(createConctract.fulfilled, (state, action) => {
-        const id = action.payload;
-        state.id = id;
-      })
-      .addCase(updateConctract.fulfilled, (state, action) => {
-        const status = action.payload;
-        if (status != 204) {
-          state.error = "Update Contract did not return 204";
+      .addCase(fetchPublicContract.fulfilled, (state, action) => {
+        if (action.payload) {
+          const { name, fields } = action.payload;
+          state.id = null;
+          state.name = name || null;
+          state.fields = fields;
         }
       })
-      .addMatcher(
-        (action): action is PayloadAction =>
-          isPending(action) && action.type.startsWith("contract/"),
-        (state) => {
-          state.loading = true;
-          state.error = null;
+      .addCase(saveContractToCloud.fulfilled, (state, action) => {
+        state.id = action.payload;
+      })
+      .addCase(saveContractLocally.fulfilled, (state, action) => {
+        state.id = action.payload;
+      })
+      .addCase(deleteContract.fulfilled, (state, action) => {
+        const deletedContractId = action.payload;
+        if (deletedContractId) {
+          state.userContracts = state.userContracts.filter(
+            (p) => p.id !== deletedContractId
+          );
         }
-      )
-      .addMatcher(
-        (action): action is PayloadAction =>
-          isFulfilled(action) && action.type.startsWith("contract/"),
-        (state) => {
-          state.loading = false;
-        }
-      )
-      .addMatcher(
-        (action): action is ReturnType<typeof isRejected> =>
-          isRejected(action) && action.type.startsWith("contract/"),
-        (state, action) => {
-          state.loading = false;
-          if ("error" in action) {
-            state.error =
-              (action.error as { message?: string }).message ||
-              "An error occurred";
-          } else {
-            state.error = "An error occurred";
-          }
-        }
-      );
+      });
+    createLoadingAndErrorMatch("contract/")(builder);
   },
 });
-export const { setName, setFields, setContract } = contractSlice.actions;
+export const {
+  setName,
+  setFields,
+  setContract,
+  clearError,
+  resetContractState,
+} = contractSlice.actions;
 
 export default contractSlice.reducer;

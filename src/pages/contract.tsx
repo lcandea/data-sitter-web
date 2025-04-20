@@ -1,52 +1,118 @@
-import { useState } from "react";
-import { FileJson, CheckCircle, Save } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExportDialog } from "@/components/contract/ExportDialog";
-import { ImportDialog } from "@/components/contract/ImportDialog";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { ContractEditor } from "@/components/contract/ContractEditor";
 import { useContract } from "@/hooks/useContract";
+import { useAppSelector } from "@/hooks/useStore";
+import { ErrorDialog } from "@/components/ui/ErrorDialog";
+import { ChevronLeftCircle, Save, Share2, UploadCloud } from "lucide-react";
+import { ShareContractDialog } from "@/components/share-contract";
+import { Validate } from "@/components/validate";
 
 export function ContractPage() {
   const { id } = useParams();
+  const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [exportOpen, setExportOpen] = useState(false);
-  const { contract, setContract, hasChanged, importContract, persistContract } =
-    useContract();
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [validateOpen, setValidateOpen] = useState(false);
 
-  const handleSave = async () => {
+  const {
+    error,
+    contract,
+    hasChanged,
+    setContract,
+    clearContract,
+    fetchContract,
+    saveContractLocally,
+    saveContractToCloud,
+    syncLocalContractToCloud,
+    updateContract,
+  } = useContract();
+
+  useEffect(() => {
+    if (id) {
+      if (!contract || contract.id !== id) {
+        fetchContract(id);
+      }
+    } else {
+      clearContract();
+    }
+  }, [id]);
+
+  const checkContract = () => {
     if (!contract.name) {
       toast({
         title: "Error",
         description: "Please enter a contract name",
         variant: "destructive",
       });
-      return;
+      return false;
     }
-    const newId = await persistContract();
-    navigate(`/contract/${newId}`);
+    return true;
   };
 
-  const handleValidate = () => {
-    if (!id) {
-      toast({
-        title: "Error",
-        description: "Please save the contract first",
-        variant: "destructive",
-      });
-      return;
+  const handleSaveLocally = async () => {
+    if (checkContract()) {
+      const newId = await saveContractLocally();
+      navigate(`/contract/${newId}`);
     }
-    navigate(`/contract/${id}/validate`);
   };
+
+  const handleSaveToCloud = async () => {
+    if (checkContract()) {
+      const newId = await saveContractToCloud();
+      navigate(`/contract/${newId}`);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!id) return;
+    if (checkContract()) {
+      await updateContract(id);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!id) return;
+    const newId = await syncLocalContractToCloud(id);
+    if (newId) navigate(`/contract/${newId}`);
+  };
+
+  const handleShare = async () => {
+    if (!id) return;
+    if (checkContract()) {
+      await updateContract(id);
+      setShareDialogOpen(true);
+    }
+  };
+
+  if (validateOpen) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Data Validation</h1>
+          <Button
+            className="w-full md:w-auto md:ml-auto"
+            variant="secondary"
+            onClick={() => setValidateOpen(false)}
+          >
+            <ChevronLeftCircle className="h-4 w-4 mr-2" />
+            Back to Editor
+          </Button>
+        </div>
+        <Validate contract={contract} />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold">Create Contract</h1>
+          <h1 className="text-3xl font-bold">Contract</h1>
           {hasChanged && (
             <Badge
               variant="outline"
@@ -57,32 +123,66 @@ export function ContractPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <ImportDialog importContract={importContract} />
-          <Button onClick={() => setExportOpen(true)} disabled={hasChanged}>
-            <FileJson className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          <Button variant="outline" onClick={handleSave} disabled={!hasChanged}>
-            <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleValidate}
-            disabled={hasChanged}
-          >
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Validate Data
-          </Button>
+          {id ? (
+            <>
+              {user &&
+                (id.startsWith("local-") ? (
+                  <Button variant="outline" onClick={handleUpload}>
+                    <UploadCloud className="h-4 w-4 mr-2" />
+                    Upload
+                  </Button>
+                ) : (
+                  <Button variant="outline" onClick={handleShare}>
+                    <Share2 className="h-4 w-4 mr-2" />
+                    Share
+                  </Button>
+                ))}
+              <Button
+                variant="outline"
+                onClick={handleUpdate}
+                disabled={!hasChanged}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+            </>
+          ) : (
+            <>
+              {user && (
+                <Button variant="outline" onClick={handleSaveToCloud}>
+                  <UploadCloud className="h-4 w-4 mr-2" />
+                  Save to Cloud
+                </Button>
+              )}
+              <Button variant="outline" onClick={handleSaveLocally}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Locally
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
-      <ContractEditor contract={contract} onChange={setContract} />
-
-      <ExportDialog
-        open={exportOpen}
-        onOpenChange={setExportOpen}
+      <ContractEditor
         contract={contract}
+        onChange={setContract}
+        openExternalValidator={setValidateOpen}
+      />
+
+      {id && (
+        <ShareContractDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          contractId={id!}
+        />
+      )}
+
+      <ErrorDialog
+        open={!!error}
+        onOpenChange={() => {
+          navigate("/");
+        }}
+        message={error!}
       />
     </div>
   );
