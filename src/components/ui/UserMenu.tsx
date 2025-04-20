@@ -154,6 +154,13 @@ export const UserMenu = () => {
             <Button
               variant="outline"
               className="w-full"
+              onClick={() => setOpenNewContract(true)}
+            >
+              New Contract
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
               onClick={handleViewContracts}
             >
               View Contracts
