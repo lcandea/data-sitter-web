@@ -49,11 +49,11 @@ function ImportContract({ onBack, onOpenChange }: ImportContractProps) {
         onOpenChange(false);
         navigate(`/contract/${newId}`);
       } catch (error) {
-        console.error(error);
         toast({
           title: "Error",
           description:
-            "Failed to import contract. Please check the file format.",
+            "Failed to import contract. Please check the file format.\n" +
+            error,
           variant: "destructive",
         });
       }
