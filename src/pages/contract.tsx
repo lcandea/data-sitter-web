@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/useToast";
 import { ContractEditor } from "@/components/contract/ContractEditor";
 import { useContract } from "@/hooks/useContract";
-import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { hideLoading, showLoading } from "@/store/slices/loading";
+import { useAppSelector } from "@/hooks/useStore";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
 import { ChevronLeftCircle, Save, Share2, UploadCloud } from "lucide-react";
 import { ShareContractDialog } from "@/components/share-contract";
@@ -15,7 +14,6 @@ import { Validate } from "@/components/validate";
 export function ContractPage() {
   const { id } = useParams();
   const { user } = useAppSelector((state) => state.auth);
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
@@ -23,7 +21,6 @@ export function ContractPage() {
 
   const {
     error,
-    loading,
     contract,
     hasChanged,
     setContract,
@@ -44,17 +41,6 @@ export function ContractPage() {
       clearContract();
     }
   }, [id]);
-
-  useEffect(() => {
-    if (loading) {
-      dispatch(showLoading());
-    } else {
-      dispatch(hideLoading());
-    }
-    return () => {
-      dispatch(hideLoading());
-    };
-  }, [dispatch, loading]);
 
   const checkContract = () => {
     if (!contract.name) {

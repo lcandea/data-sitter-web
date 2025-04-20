@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/useToast";
 import { ContractEditor } from "@/components/contract/ContractEditor";
 import { useContract } from "@/hooks/useContract";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
 import { clearError } from "@/store/slices/contract";
 import { Validate } from "@/components/validate";
@@ -22,7 +21,6 @@ export function PublicContractPage() {
 
   const {
     error,
-    loading,
     contract,
     hasChanged,
     setContract,
@@ -39,17 +37,6 @@ export function PublicContractPage() {
       clearContract();
     }
   }, [fetchPublicContract, clearContract, publicToken]);
-
-  useEffect(() => {
-    if (loading) {
-      dispatch(showLoading());
-    } else {
-      dispatch(hideLoading());
-    }
-    return () => {
-      dispatch(hideLoading());
-    };
-  }, [dispatch, loading]);
 
   const checkContract = () => {
     if (!contract.name) {

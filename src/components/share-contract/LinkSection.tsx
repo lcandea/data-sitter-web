@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/useToast";
-import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { useAppDispatch } from "@/hooks/useStore";
 import {
   createContractLink,
   deleteContractLink,
@@ -13,16 +13,17 @@ import {
   updateLinkIsActive,
 } from "@/store/slices/contractShare";
 import { useNavigate } from "react-router-dom";
+import { ContractLink } from "@/lib/database-types";
 
 interface LinkSectionProps {
   contractId: string;
+  contractLink: ContractLink | null;
 }
 
-export function LinkSection({ contractId }: LinkSectionProps) {
+export function LinkSection({ contractId, contractLink }: LinkSectionProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { link: contractLink } = useAppSelector((state) => state.contractShare);
 
   const [copied, setCopied] = useState(false);
 

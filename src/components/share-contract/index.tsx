@@ -11,12 +11,12 @@ import { Separator } from "@/components/ui/separator";
 import { LinkSection } from "./LinkSection";
 import { PermissionsSection } from "./PermissionsSection";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { hideLoading, showLoading } from "@/store/slices/loading";
 import {
   fetchContractLink,
   fetchContractPermissions,
 } from "@/store/slices/contractShare";
 import { useToast } from "@/hooks/useToast";
+import { Loader2 } from "lucide-react";
 
 interface ShareContractDialogProps {
   open: boolean;
@@ -32,18 +32,9 @@ export function ShareContractDialog({
   const dispatch = useAppDispatch();
   const { toast } = useToast();
 
-  const { loading, error } = useAppSelector((state) => state.contractShare);
-
-  useEffect(() => {
-    if (loading) {
-      dispatch(showLoading());
-    } else {
-      dispatch(hideLoading());
-    }
-    return () => {
-      dispatch(hideLoading());
-    };
-  }, [dispatch, loading]);
+  const { link, permissions, loading, error } = useAppSelector(
+    (state) => state.contractShare
+  );
 
   useEffect(() => {
     if (contractId && open) {
@@ -63,19 +54,33 @@ export function ShareContractDialog({
   }, [toast, error, open]);
 
   return (
-    <Dialog open={!loading && open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Share Contract</DialogTitle>
-        </DialogHeader>
-        <LinkSection contractId={contractId} />
-        <Separator className="my-6" />
-        <PermissionsSection contractId={contractId} />
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-        </DialogFooter>
+        {loading ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground text-center">
+              {"Loading... Please wait."}
+            </p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Share Contract</DialogTitle>
+            </DialogHeader>
+            <LinkSection contractId={contractId} contractLink={link} />
+            <Separator className="my-6" />
+            <PermissionsSection
+              contractId={contractId}
+              contractPermissions={permissions}
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

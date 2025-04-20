@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "./useStore";
 
 import * as csActions from "../store/slices/contract";
 import * as vActions from "../store/slices/values";
+import { useLoading } from "./useLoading";
 
 export const useContract = () => {
   const dispatch = useAppDispatch();
@@ -21,6 +22,7 @@ export const useContract = () => {
     name: storedName,
     fields: storedFields,
   } = useAppSelector((state) => state.contract);
+  useLoading(loading);
 
   useEffect(() => {
     if (storedName) {

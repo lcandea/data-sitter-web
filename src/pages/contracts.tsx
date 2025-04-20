@@ -17,12 +17,12 @@ import {
   fetchUserContracts,
   syncLocalContractToCloud,
 } from "@/store/slices/contract";
-import { hideLoading, showLoading } from "@/store/slices/loading";
 import { ShareContractDialog } from "@/components/share-contract";
 import { ContractPermissionRole } from "@/lib/database-types";
 import { Badge } from "@/components/ui/badge";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
 import { CreateContractDialog } from "@/components/CreateContract";
+import { useLoading } from "@/hooks/useLoading";
 
 // Role display mapping
 const roleDisplayMap: Record<
@@ -46,6 +46,7 @@ export function ContractsPage() {
   const { userContracts, loading, error } = useAppSelector(
     (state) => state.contract
   );
+  useLoading(loading);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [openNewContract, setOpenNewContract] = useState(false);
@@ -56,17 +57,6 @@ export function ContractsPage() {
   useEffect(() => {
     dispatch(fetchUserContracts());
   }, [dispatch]);
-
-  useEffect(() => {
-    if (loading) {
-      dispatch(showLoading());
-    } else {
-      dispatch(hideLoading());
-    }
-    return () => {
-      dispatch(hideLoading());
-    };
-  }, [dispatch, loading]);
 
   const handleUpload = async (contractId: string, e: React.MouseEvent) => {
     e.stopPropagation();

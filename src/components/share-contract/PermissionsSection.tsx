@@ -9,8 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ContractPermissionRole } from "@/lib/database-types";
-import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import {
+  ContractPermission,
+  ContractPermissionRole,
+} from "@/lib/database-types";
+import { useAppDispatch } from "@/hooks/useStore";
 import { useToast } from "@/hooks/useToast";
 import {
   grantUserPermission,
@@ -20,16 +23,17 @@ import {
 
 interface PermissionsSectionProps {
   contractId: string;
+  contractPermissions: ContractPermission[];
 }
 
 const ROLES: ContractPermissionRole[] = ["reader", "writer", "validator"];
 
-export function PermissionsSection({ contractId }: PermissionsSectionProps) {
+export function PermissionsSection({
+  contractId,
+  contractPermissions,
+}: PermissionsSectionProps) {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const { permissions: contractPermissions } = useAppSelector(
-    (state) => state.contractShare
-  );
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<ContractPermissionRole>("reader");
