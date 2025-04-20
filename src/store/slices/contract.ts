@@ -90,8 +90,13 @@ export const importContract = createAppAsyncThunk(
     }
     const importedContract = await validator.getRepresentation();
     const contract = contractFromImportData(importedContract);
+    dispatch(setName(contract.name));
+    dispatch(setFields(contract.fields));
     dispatch(setValues(contract.values));
-    return contract;
+    const resultAction = await dispatch(saveContractLocally());
+    if (saveContractLocally.fulfilled.match(resultAction)) {
+      return resultAction.payload;
+    }
   }
 );
 
@@ -221,11 +226,6 @@ const contractSlice = createSlice({
       })
       .addCase(saveContractLocally.fulfilled, (state, action) => {
         state.id = action.payload;
-      })
-      .addCase(importContract.fulfilled, (state, action) => {
-        const { name, fields } = action.payload;
-        state.name = name;
-        state.fields = fields;
       })
       .addCase(deleteContract.fulfilled, (state, action) => {
         const deletedContractId = action.payload;

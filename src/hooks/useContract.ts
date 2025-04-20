@@ -89,7 +89,13 @@ export const useContract = () => {
   );
 
   const importContract = async (content: string, fileType: "YAML" | "JSON") => {
-    dispatch(csActions.importContract({ content, fileType }));
+    const resultAction = await dispatch(
+      csActions.importContract({ content, fileType })
+    );
+    if (csActions.importContract.fulfilled.match(resultAction)) {
+      return resultAction.payload;
+    }
+    return null;
   };
 
   const saveContractToStore = async () => {

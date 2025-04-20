@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
@@ -12,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Users, Database, Cpu, Code, Bot } from "lucide-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import DataSitterIcon from "../components/ui/DataSitterIcon";
+import { CreateContractDialog } from "@/components/CreateContract";
 
 const features = [
   {
@@ -120,6 +122,8 @@ const sampleContract = {
 };
 
 export function Landing() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="flex flex-col items-center justify-center max-w-7xl mx-auto px-4 py-20 md:py-28">
       <DataSitterIcon className="h-64 w-64 text-primary mb-10" />
@@ -165,8 +169,8 @@ export function Landing() {
         </div>
       </div>
       <div className="flex gap-4 mt-10">
-        <Button size="lg" asChild>
-          <Link to="../contract">Get Started</Link>
+        <Button onClick={() => setOpen(true)} size="lg">
+          Get Started
         </Button>
         <Button size="lg" variant="outline" asChild>
           <a
@@ -335,6 +339,7 @@ export function Landing() {
           </Button>
         </div>
       </div>
+      <CreateContractDialog open={open} onOpenChange={setOpen} />
     </div>
   );
 }

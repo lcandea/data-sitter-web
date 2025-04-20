@@ -22,6 +22,7 @@ import { ShareContractDialog } from "@/components/share-contract";
 import { ContractPermissionRole } from "@/lib/database-types";
 import { Badge } from "@/components/ui/badge";
 import { ErrorDialog } from "@/components/ui/ErrorDialog";
+import { CreateContractDialog } from "@/components/CreateContract";
 
 // Role display mapping
 const roleDisplayMap: Record<
@@ -47,6 +48,7 @@ export function ContractsPage() {
   );
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [openNewContract, setOpenNewContract] = useState(false);
   const [selectedContractId, setSelectedContractId] = useState<string | null>(
     null
   );
@@ -93,7 +95,9 @@ export function ContractsPage() {
     <div className="container mx-auto py-8 px-4">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Your Contracts</h1>
-        <Button onClick={() => navigate("/contract")}>Create Contract</Button>
+        <Button onClick={() => setOpenNewContract(true)}>
+          Create Contract
+        </Button>
       </div>
 
       <div className="border rounded-lg">
@@ -162,6 +166,11 @@ export function ContractsPage() {
           </TableBody>
         </Table>
       </div>
+
+      <CreateContractDialog
+        open={openNewContract}
+        onOpenChange={setOpenNewContract}
+      />
 
       <ShareContractDialog
         open={shareDialogOpen}

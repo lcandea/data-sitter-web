@@ -20,6 +20,7 @@ import { lazy, useMemo, useState } from "react";
 import { Button } from "./button";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { logout } from "@/store/slices/auth";
+import { CreateContractDialog } from "../CreateContract";
 
 const LogInDialog = lazy(() =>
   import("./logInDialog").then((module) => ({ default: module.LogInDialog }))
@@ -30,6 +31,7 @@ export const UserMenu = () => {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
   const [openLogin, setOpenLogin] = useState(false);
+  const [openNewContract, setOpenNewContract] = useState(false);
 
   const userInfo = useMemo(() => {
     if (user) {
@@ -88,6 +90,9 @@ export const UserMenu = () => {
               </div>
             </div>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setOpenNewContract(true)}>
+              New Contract
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate("/contracts")}>
               My Contracts
             </DropdownMenuItem>
@@ -178,6 +183,10 @@ export const UserMenu = () => {
       </Sheet>
 
       <LogInDialog open={openLogin} onOpenChange={setOpenLogin} />
+      <CreateContractDialog
+        open={openNewContract}
+        onOpenChange={setOpenNewContract}
+      />
     </>
   );
 };
