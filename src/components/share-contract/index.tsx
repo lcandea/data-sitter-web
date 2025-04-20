@@ -40,6 +40,9 @@ export function ShareContractDialog({
     } else {
       dispatch(hideLoading());
     }
+    return () => {
+      dispatch(hideLoading());
+    };
   }, [dispatch, loading]);
 
   useEffect(() => {

@@ -63,6 +63,9 @@ export function ContractsPage() {
     } else {
       dispatch(hideLoading());
     }
+    return () => {
+      dispatch(hideLoading());
+    };
   }, [dispatch, loading]);
 
   const handleUpload = async (contractId: string, e: React.MouseEvent) => {

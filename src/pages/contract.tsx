@@ -51,6 +51,9 @@ export function ContractPage() {
     } else {
       dispatch(hideLoading());
     }
+    return () => {
+      dispatch(hideLoading());
+    };
   }, [dispatch, loading]);
 
   const checkContract = () => {
